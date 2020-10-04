@@ -92,3 +92,22 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
+  - islands:
+      - x: 0
+        y: 0
+        b: 2
+        n: 0
+      - x: 1
+        y: 0
+        b: 2
+        n: 0
+      - x: 0
+        y: 3
+        b: 2
+        n: 0
+      - x: 1
+        y: 3
+        b: 2
+        n: 0
+    bridgesH: []
+    bridgesV: []

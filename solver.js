@@ -211,7 +211,6 @@ const solve = (level) => {
     }
     if (!somethingChanged) {
       console.log(`Level thus far (${solutionData.loops} loops):`);
-      console.log(adjacent(level, level.islands[1], level.islands[4]));
       print(level);
       throw new Error('Level unsolvable with current set of heuristics');
     }

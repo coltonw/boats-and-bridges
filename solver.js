@@ -3,7 +3,7 @@ const path = require('path');
 const yaml = require('js-yaml');
 const print = require('./print');
 
-const { levels } = yaml.safeLoad(
+const { levels, testLevels } = yaml.safeLoad(
   fs.readFileSync(path.join(__dirname, 'levels.yml'))
 );
 
@@ -159,7 +159,30 @@ const onlyChoiceHueristic = (level, island) => {
 };
 
 // if the adjacent possible bridges left fill all remaining bridges needed
-// TODO: onlyChoices heuristic
+const onlyChoicesHueristic = (level, island) => {
+  let adjacentIslands = [];
+  for (let i = 0; i < level.islands.length; i++) {
+    if (adjacent(level, island, level.islands[i]) && !full(level.islands[i])) {
+      adjacentIslands.push(level.islands[i]);
+    }
+  }
+  const bridgeOptionsSum = adjacentIslands.reduce(
+    (sum, aI) => sum + aI.b - aI.n,
+    0
+  );
+  if (bridgeOptionsSum <= island.b - island.n) {
+    adjacentIslands.forEach((adjacentIsland) => {
+      addBridge(
+        level,
+        island,
+        adjacentIsland,
+        adjacentIsland.b - adjacentIsland.n
+      );
+    });
+    return true;
+  }
+  return false;
+};
 
 // if there are so many bridges required that you MUST have 1 point to each adjacent island
 const moreBridgesThanChoicesHueristic = (level, island) => {
@@ -178,10 +201,43 @@ const moreBridgesThanChoicesHueristic = (level, island) => {
   return false;
 };
 
+// if you can only have a single bridge to some of the adjecent bridges it may mean you MUST put a bridge on other islands
+// this is a somewhat more complex moreBridgesThanChoicesHueristic
+const pigeonholeHueristic = (level, island) => {
+  let adjacentIslands = [];
+  for (let i = 0; i < level.islands.length; i++) {
+    if (adjacent(level, island, level.islands[i]) && !full(level.islands[i])) {
+      adjacentIslands.push(level.islands[i]);
+    }
+  }
+  const singleLinkOptions = adjacentIslands.reduce(
+    (sum, aI) => sum + (aI.b - aI.n === 1 ? 1 : 0),
+    0
+  );
+  if (
+    (adjacentIslands.length - singleLinkOptions) * 2 - 1 <=
+      island.b - island.n - singleLinkOptions &&
+    singleLinkOptions < adjacentIslands.length
+  ) {
+    adjacentIslands.forEach((adjacentIsland) => {
+      if (adjacentIsland.b - adjacentIsland.n > 1) {
+        addBridge(level, island, adjacentIsland, 1);
+      }
+    });
+    return true;
+  }
+  return false;
+};
+
 const solved = (level) =>
   level.islands.reduce((s, island) => s && island.b === island.n, true);
 
-const heuristics = [onlyChoiceHueristic, moreBridgesThanChoicesHueristic];
+const heuristics = [
+  onlyChoiceHueristic,
+  onlyChoicesHueristic,
+  moreBridgesThanChoicesHueristic,
+  pigeonholeHueristic,
+];
 
 const solve = (level) => {
   console.log('Unsolved:');
@@ -221,4 +277,10 @@ const solve = (level) => {
   print(level);
 };
 
-levels.forEach((level) => solve(level));
+[...levels, ...testLevels].forEach((level) => {
+  try {
+    solve(level);
+  } catch (e) {
+    console.log(e);
+  }
+});

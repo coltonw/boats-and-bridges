@@ -9,6 +9,8 @@
   "author": "coltonw@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "js-yaml": "^3.14.0"
+    "crawler": "^1.2.2",
+    "js-yaml": "^3.14.0",
+    "lodash": "^4.17.20"
   }
 }

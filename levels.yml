@@ -164,6 +164,26 @@ levels:
     bridgesV: []
 # these levels are stolen from https://www.puzzle-bridges.com/ thus should never be published
 testLevels:
+  # Multiple solutions
+  - islands:
+      - x: 0
+        y: 0
+        b: 3
+        n: 0
+      - x: 1
+        y: 0
+        b: 3
+        n: 0
+      - x: 0
+        y: 1
+        b: 3
+        n: 0
+      - x: 1
+        y: 1
+        b: 3
+        n: 0
+    bridgesH: []
+    bridgesV: []
   # 7x7 Easy
   - islands:
       - x: 0

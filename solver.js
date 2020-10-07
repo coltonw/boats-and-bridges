@@ -1,19 +1,42 @@
-const fs = require('fs');
-const path = require('path');
-const yaml = require('js-yaml');
 // the lodash forEach allows returning false to stop it
 const { cloneDeep, forEach } = require('lodash');
 const print = require('./print');
-
-const { levels, testLevels } = yaml.safeLoad(
-  fs.readFileSync(path.join(__dirname, 'levels.yml'))
-);
 
 /**
  * This solver attempts to not just solve a level but also determine how difficult a level is by solving using
  * various heuristics that a human being would use to solve a level.
  */
 
+const bridgeBetween = (level, island0, island1) => {
+  let bridge = null;
+  if (island0.x === island1.x) {
+    forEach(level.bridgesV, (bridgeV) => {
+      if (
+        bridgeV.x === island0.x &&
+        bridgeV.y0 === Math.min(island0.y, island1.y) &&
+        bridgeV.y1 === Math.max(island0.y, island1.y)
+      ) {
+        bridge = bridgeV;
+        return false;
+      }
+    });
+  }
+  if (island0.y === island1.y) {
+    forEach(level.bridgesH, (bridgeH) => {
+      if (
+        bridgeH.y === island0.y &&
+        bridgeH.x0 === Math.min(island0.x, island1.x) &&
+        bridgeH.x1 === Math.max(island0.x, island1.x)
+      ) {
+        bridge = bridgeH;
+        return false;
+      }
+    });
+  }
+  return bridge;
+};
+
+// TODO: use bridgeBetween to simplify this function
 const possibleConnections = (level, island0, island1) => {
   let maxMax = 2;
   if (island0.x === island1.x) {
@@ -376,6 +399,7 @@ const pigeonholeHeuristic = (level, island) => {
 // to making sure all islands are connected
 const guessAndCheck = (nested) => (level, island) => {
   let adjacentIslands = [];
+  // TODO: for efficiency we could only check adjacency to islands with a greater index than ourselves.
   for (let i = 0; i < level.islands.length; i++) {
     if (
       adjacent(level, island, level.islands[i]) &&
@@ -532,13 +556,61 @@ const solve = (level, quiet = false, noGuessing = false) => {
   quiet || print(level);
 };
 
-// solve(levels[4]);
-[...levels, ...testLevels].forEach((level) => {
-  try {
-    solve(level);
-  } catch (e) {
-    console.log(e);
-  }
-});
+// TODO: Add other mechanics AKA questions marks or boats or whatever
 
 module.exports = solve;
+
+solve.hasMultipleSolutions = (level) => {
+  const solvedLevel = cloneDeep(level);
+  solve(solvedLevel, true);
+  let found = false;
+  forEach(level.islands, (island, i) => {
+    let adjacentIslands = [];
+    for (let j = 0; j < level.islands.length; j++) {
+      if (adjacent(level, island, level.islands[j])) {
+        const bridge = bridgeBetween(
+          solvedLevel,
+          solvedLevel.islands[i],
+          solvedLevel.islands[j]
+        );
+        if (
+          !bridge ||
+          (bridge.n === 1 && island.b > 1 && level.islands[j].b > 1)
+        ) {
+          adjacentIslands.push(level.islands[j]);
+        }
+      }
+    }
+    forEach(adjacentIslands, (adjacentIsland) => {
+      try {
+        const levelClone = cloneDeep(level);
+        const islandClone = levelClone.islands.find(
+          ({ x, y }) => island.x === x && island.y === y
+        );
+        const adjacentIslandClone = levelClone.islands.find(
+          ({ x, y }) => adjacentIsland.x === x && adjacentIsland.y === y
+        );
+        const bridge = bridgeBetween(
+          solvedLevel,
+          solvedLevel.islands[i],
+          solvedLevel.islands.find(
+            ({ x, y }) => adjacentIsland.x === x && adjacentIsland.y === y
+          )
+        );
+        const numBridges = bridge ? 2 : 1;
+        addBridge(levelClone, islandClone, adjacentIslandClone, numBridges);
+        solve(levelClone, true);
+        if (fullyConnected(levelClone)) {
+          found = true;
+          console.log('Other solution:');
+          print(levelClone);
+          return false;
+        }
+      } catch (e) {}
+    });
+    if (found) {
+      return false;
+    }
+  });
+  return found;
+};

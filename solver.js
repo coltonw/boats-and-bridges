@@ -1,218 +1,20 @@
 // the lodash forEach allows returning false to stop it
 const { cloneDeep, forEach } = require('lodash');
 const print = require('./print');
+const {
+  bridgeBetween,
+  possibleConnections,
+  adjacent,
+  full,
+  addBridge,
+  fullyConnected,
+  getPossiblyConnectedIslands,
+} = require('./utils');
 
 /**
  * This solver attempts to not just solve a level but also determine how difficult a level is by solving using
  * various heuristics that a human being would use to solve a level.
  */
-
-const bridgeBetween = (level, island0, island1) => {
-  let bridge = null;
-  if (island0.x === island1.x) {
-    forEach(level.bridgesV, (bridgeV) => {
-      if (
-        bridgeV.x === island0.x &&
-        bridgeV.y0 === Math.min(island0.y, island1.y) &&
-        bridgeV.y1 === Math.max(island0.y, island1.y)
-      ) {
-        bridge = bridgeV;
-        return false;
-      }
-    });
-  }
-  if (island0.y === island1.y) {
-    forEach(level.bridgesH, (bridgeH) => {
-      if (
-        bridgeH.y === island0.y &&
-        bridgeH.x0 === Math.min(island0.x, island1.x) &&
-        bridgeH.x1 === Math.max(island0.x, island1.x)
-      ) {
-        bridge = bridgeH;
-        return false;
-      }
-    });
-  }
-  return bridge;
-};
-
-// TODO: use bridgeBetween to simplify this function
-const possibleConnections = (level, island0, island1) => {
-  let maxMax = 2;
-  if (island0.x === island1.x) {
-    if (level.maxBridgesV) {
-      forEach(level.maxBridgesV, (maxBridgeV) => {
-        if (
-          maxBridgeV.x === island0.x &&
-          maxBridgeV.y0 === Math.min(island0.y, island1.y) &&
-          maxBridgeV.y1 === Math.max(island0.y, island1.y)
-        ) {
-          maxMax = Math.min(maxMax, maxBridgeV.max);
-          return false;
-        }
-      });
-    }
-
-    forEach(level.bridgesV, (bridgeV) => {
-      if (
-        bridgeV.x === island0.x &&
-        bridgeV.y0 === Math.min(island0.y, island1.y) &&
-        bridgeV.y1 === Math.max(island0.y, island1.y)
-      ) {
-        maxMax = Math.min(maxMax, 2 - bridgeV.n);
-        return false;
-      }
-    });
-  }
-  if (island0.y === island1.y) {
-    if (level.maxBridgesH) {
-      forEach(level.maxBridgesH, (maxBridgeH) => {
-        if (
-          maxBridgeH.y === island0.y &&
-          maxBridgeH.x0 === Math.min(island0.x, island1.x) &&
-          maxBridgeH.x1 === Math.max(island0.x, island1.x)
-        ) {
-          maxMax = Math.min(maxMax, maxBridgeH.max);
-          return false;
-        }
-      });
-    }
-
-    forEach(level.bridgesH, (bridgeH) => {
-      if (
-        bridgeH.y === island0.y &&
-        bridgeH.x0 === Math.min(island0.x, island1.x) &&
-        bridgeH.x1 === Math.max(island0.x, island1.x)
-      ) {
-        maxMax = Math.min(maxMax, 2 - bridgeH.n);
-        return false;
-      }
-    });
-  }
-  return Math.min(island0.b - island0.n, island1.b - island1.n, maxMax);
-};
-
-const vertAdjacent = (level, island0, island1) => {
-  if (island0.x === island1.x && island0.y !== island1.y) {
-    // check if there are any islands in the way
-    for (let i = 0; i < level.islands.length; i++) {
-      if (
-        level.islands[i].x === island0.x &&
-        ((level.islands[i].y < island0.y && level.islands[i].y > island1.y) ||
-          (level.islands[i].y > island0.y && level.islands[i].y < island1.y))
-      ) {
-        return false;
-      }
-    }
-    // check if there are any bridges in the way
-    for (let i = 0; i < level.bridgesH.length; i++) {
-      if (
-        ((level.bridgesH[i].y < island0.y && level.bridgesH[i].y > island1.y) ||
-          (level.bridgesH[i].y > island0.y &&
-            level.bridgesH[i].y < island1.y)) &&
-        level.bridgesH[i].x0 < island0.x &&
-        level.bridgesH[i].x1 > island0.x
-      ) {
-        return false;
-      }
-    }
-    // nothing in the way, they must be adjacent
-    return true;
-  }
-  return false;
-};
-
-const horAdjacent = (level, island0, island1) => {
-  if (island0.y === island1.y && island0.x !== island1.x) {
-    for (let i = 0; i < level.islands.length; i++) {
-      if (
-        level.islands[i].y === island0.y &&
-        ((level.islands[i].x < island0.x && level.islands[i].x > island1.x) ||
-          (level.islands[i].x > island0.x && level.islands[i].x < island1.x))
-      ) {
-        return false;
-      }
-    }
-    for (let i = 0; i < level.bridgesV.length; i++) {
-      if (
-        ((level.bridgesV[i].x < island0.x && level.bridgesV[i].x > island1.x) ||
-          (level.bridgesV[i].x > island0.x &&
-            level.bridgesV[i].x < island1.x)) &&
-        level.bridgesV[i].y0 < island0.y &&
-        level.bridgesV[i].y1 > island0.y
-      ) {
-        return false;
-      }
-    }
-    return true;
-  }
-  return false;
-};
-
-const adjacent = (level, island0, island1) => {
-  return (
-    vertAdjacent(level, island0, island1) ||
-    horAdjacent(level, island0, island1)
-  );
-};
-
-const full = (island) => island.n >= island.b;
-
-const addBridge = (level, island0, island1, n = 1) => {
-  if (island0.x === island1.x) {
-    const bridge = {
-      x: island0.x,
-      y0: Math.min(island0.y, island1.y),
-      y1: Math.max(island0.y, island1.y),
-      n,
-    };
-    let found = false;
-    for (let i = 0; i < level.bridgesV.length; i++) {
-      if (
-        level.bridgesV[i].x === bridge.x &&
-        level.bridgesV[i].y0 === bridge.y0 &&
-        level.bridgesV[i].y1 === bridge.y1
-      ) {
-        if (level.bridgesV[i].n + n > 2) {
-          throw new Error('Too many bridges');
-        }
-        level.bridgesV[i].n += n;
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      level.bridgesV.push(bridge);
-    }
-  } else {
-    const bridge = {
-      x0: Math.min(island0.x, island1.x),
-      x1: Math.max(island0.x, island1.x),
-      y: island0.y,
-      n,
-    };
-    let found = false;
-    for (let i = 0; i < level.bridgesH.length; i++) {
-      if (
-        level.bridgesH[i].x0 === bridge.x0 &&
-        level.bridgesH[i].x1 === bridge.x1 &&
-        level.bridgesH[i].y === bridge.y
-      ) {
-        if (level.bridgesH[i].n + n > 2) {
-          throw new Error('Too many bridges');
-        }
-        level.bridgesH[i].n += n;
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      level.bridgesH.push(bridge);
-    }
-  }
-  island0.n += n;
-  island1.n += n;
-};
 
 const addMaxBridge = (level, island0, island1, max = 1) => {
   if (island0.x === island1.x) {
@@ -260,6 +62,10 @@ const addMaxBridge = (level, island0, island1, max = 1) => {
     return true;
   }
 };
+
+// TODO: Split out several of these heuristics into a "simple" version
+// which ignores current bridges and a normal version which pays attention
+// to possibleConnections only
 
 // if there is only one island that can connect, connect to that island
 const onlyChoiceHeuristic = (level, island) => {
@@ -363,6 +169,61 @@ const moreBridgesThanChoicesHeuristic = (level, island) => {
   return false;
 };
 
+// there are a few possible variations of this:
+// 1. Must connect or stranded:
+//    A - X   X - B   Where A and B CANNOT connect via any other links
+// 2. Must max bridge or stranded:
+//    A - A
+//
+//    X   X - B
+//    |       |
+//    B - B - B   Where A and B CANNOT connect via any other links
+// 3. No stranded pigeonhole:
+//    A ----- A
+//
+//    B - X - B  Where the only 2 (or even 3?!) possible links are all adjacent to one island,
+//
+//        Y      Which means that island X is pigeonholed to connect to Y
+// 4. Narrow guess, only 2 islands can connect so you must pick one of those 2
+const noStrandedIslandsAdvanced1Heuristic = (level, island) => {
+  let adjacentIslands = [];
+  for (let i = 0; i < level.islands.length; i++) {
+    if (
+      adjacent(level, island, level.islands[i]) &&
+      possibleConnections(level, island, level.islands[i]) > 0 &&
+      !bridgeBetween(level, island, level.islands[i])
+    ) {
+      adjacentIslands.push(level.islands[i]);
+    }
+  }
+
+  let found = false;
+  adjacentIslands.forEach((adjacentIsland) => {
+    const myIslands = getPossiblyConnectedIslands(level, island, [
+      adjacentIsland,
+    ]);
+    const yourIslands = getPossiblyConnectedIslands(level, adjacentIsland, [
+      island,
+    ]);
+    let intersect = false;
+    for (let i = 0; i < myIslands.length; i++) {
+      if (
+        yourIslands.find(
+          (yI) => yI.x === myIslands[i].x && yI.y === myIslands[i].y
+        )
+      ) {
+        intersect = true;
+        break;
+      }
+    }
+    if (!intersect) {
+      addBridge(level, island, adjacentIsland, 1);
+      found = true;
+    }
+  });
+  return found;
+};
+
 // if you can only have a single bridge to some of the adjecent bridges it may mean you MUST put a bridge on other islands
 // this is a somewhat more complex moreBridgesThanChoicesHeuristic
 const pigeonholeHeuristic = (level, island) => {
@@ -434,80 +295,23 @@ const guessAndCheck = (nested) => (level, island) => {
 const solved = (level) =>
   level.islands.reduce((s, island) => s && island.b === island.n, true);
 
-const connectedIslands = (level, island) => {
-  const result = [];
-  level.bridgesH.forEach((bridgeH) => {
-    if (bridgeH.x0 === island.x && bridgeH.y === island.y) {
-      const connected = level.islands.find(
-        (i) => i.x === bridgeH.x1 && i.y === bridgeH.y
-      );
-      if (!connected) {
-        throw new Error(`Bridge connected to nothing: ${bridgeH}`);
-      }
-      result.push(connected);
-    }
-    if (bridgeH.x1 === island.x && bridgeH.y === island.y) {
-      const connected = level.islands.find(
-        (i) => i.x === bridgeH.x0 && i.y === bridgeH.y
-      );
-      if (!connected) {
-        throw new Error(`Bridge connected to nothing: ${bridgeH}`);
-      }
-      result.push(connected);
-    }
-  });
-  level.bridgesV.forEach((bridgeV) => {
-    if (bridgeV.x === island.x && bridgeV.y0 === island.y) {
-      const connected = level.islands.find(
-        (i) => i.x === bridgeV.x && i.y === bridgeV.y1
-      );
-      if (!connected) {
-        throw new Error(`Bridge connected to nothing: ${bridgeV}`);
-      }
-      result.push(connected);
-    }
-    if (bridgeV.x === island.x && bridgeV.y1 === island.y) {
-      const connected = level.islands.find(
-        (i) => i.x === bridgeV.x && i.y === bridgeV.y0
-      );
-      if (!connected) {
-        throw new Error(`Bridge connected to nothing: ${bridgeV}`);
-      }
-      result.push(connected);
-    }
-  });
-  return result;
-};
-
-const fullyConnected = (level) => {
-  const traversingStack = [level.islands[0]];
-  const visited = [level.islands[0]];
-
-  while (traversingStack.length > 0) {
-    const island = traversingStack.pop();
-    const connected = connectedIslands(level, island);
-    connected.forEach((cI) => {
-      if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
-        visited.push(cI);
-        traversingStack.unshift(cI);
-      }
-    });
-  }
-
-  return visited.length === level.islands.length;
-};
-
 const heuristics = [
   onlyChoiceHeuristic,
   onlyChoicesHeuristic,
   noStrandedIslandsSimpleHeuristic,
   moreBridgesThanChoicesHeuristic,
+  noStrandedIslandsAdvanced1Heuristic,
   pigeonholeHeuristic,
   guessAndCheck(false),
   guessAndCheck(true),
 ];
 
-const solve = (level, quiet = false, noGuessing = false) => {
+const solve = (
+  level,
+  quiet = false,
+  noGuessing = false,
+  noNestedGuessing = false
+) => {
   quiet || console.log('Unsolved:');
   quiet || print(level);
   let solutionData = {
@@ -517,7 +321,8 @@ const solve = (level, quiet = false, noGuessing = false) => {
   while (!solved(level)) {
     solutionData.loops++;
     let somethingChanged = false;
-    const heurLen = heuristics.length - (noGuessing ? 2 : 0);
+    const heurLen =
+      heuristics.length - (noGuessing ? 2 : noNestedGuessing ? 1 : 0);
     // Probably in the future we will need to have heuristics check more than just one island at a time, but for now this works
     for (let h = 0; h < heurLen; h++) {
       forEach(level.islands, (island) => {
@@ -541,26 +346,29 @@ const solve = (level, quiet = false, noGuessing = false) => {
       quiet || print(level);
       throw new Error('Level unsolvable with current set of heuristics');
     }
-    if (solutionData.loops > 40) {
-      quiet ||
-        console.log(
-          `Broken heuristic: ${solutionData.heuristicsApplied.slice(-10)}`
-        );
+    if (solutionData.loops > 200) {
+      console.log(
+        `Broken heuristic: ${solutionData.heuristicsApplied.slice(-10)}`
+      );
       throw new Error('Suspected infinite loop');
     }
   }
+  solutionData.complexity =
+    solutionData.heuristicsApplied.reduce((s, n) => s + n) /
+    solutionData.heuristicsApplied.length;
   quiet ||
     console.log(
-      `Solved (${solutionData.loops} loops; heuristics: ${solutionData.heuristicsApplied}):`
+      `Solved (${solutionData.loops} loops; heuristics: ${solutionData.heuristicsApplied}, complexity: ${solutionData.complexity}):`
     );
   quiet || print(level);
+  return solutionData;
 };
 
 // TODO: Add other mechanics AKA questions marks or boats or whatever
 
 module.exports = solve;
 
-solve.hasMultipleSolutions = (level) => {
+solve.hasMultipleSolutions = (level, quiet = false) => {
   const solvedLevel = cloneDeep(level);
   solve(solvedLevel, true);
   let found = false;
@@ -602,8 +410,8 @@ solve.hasMultipleSolutions = (level) => {
         solve(levelClone, true);
         if (fullyConnected(levelClone)) {
           found = true;
-          console.log('Other solution:');
-          print(levelClone);
+          quiet || console.log('Other solution:');
+          quiet || print(levelClone);
           return false;
         }
       } catch (e) {}

@@ -169,22 +169,40 @@ const moreBridgesThanChoicesHeuristic = (level, island) => {
   return false;
 };
 
-// there are a few possible variations of this:
+// if you can only have a single bridge to some of the adjecent bridges it may mean you MUST put a bridge on other islands
+// this is a somewhat more complex moreBridgesThanChoicesHeuristic
+const pigeonholeHeuristic = (level, island) => {
+  let adjacentIslands = [];
+  for (let i = 0; i < level.islands.length; i++) {
+    if (
+      adjacent(level, island, level.islands[i]) &&
+      possibleConnections(level, island, level.islands[i]) > 0
+    ) {
+      adjacentIslands.push(level.islands[i]);
+    }
+  }
+  const singleLinkOptions = adjacentIslands.reduce(
+    (sum, aI) => sum + (possibleConnections(level, island, aI) === 1 ? 1 : 0),
+    0
+  );
+  if (
+    (adjacentIslands.length - singleLinkOptions) * 2 - 1 <=
+      island.b - island.n - singleLinkOptions &&
+    singleLinkOptions < adjacentIslands.length
+  ) {
+    adjacentIslands.forEach((adjacentIsland) => {
+      if (possibleConnections(level, island, adjacentIsland) > 1) {
+        addBridge(level, island, adjacentIsland, 1);
+      }
+    });
+    return true;
+  }
+  return false;
+};
+
+// there are a few possible variations of stranded island heuristics:
 // 1. Must connect or stranded:
 //    A - X   X - B   Where A and B CANNOT connect via any other links
-// 2. Must max bridge or stranded:
-//    A - A
-//
-//    X   X - B
-//    |       |
-//    B - B - B   Where A and B CANNOT connect via any other links
-// 3. No stranded pigeonhole:
-//    A ----- A
-//
-//    B - X - B  Where the only 2 (or even 3?!) possible links are all adjacent to one island,
-//
-//        Y      Which means that island X is pigeonholed to connect to Y
-// 4. Narrow guess, only 2 islands can connect so you must pick one of those 2
 const noStrandedIslandsAdvanced1Heuristic = (level, island) => {
   let adjacentIslands = [];
   for (let i = 0; i < level.islands.length; i++) {
@@ -224,9 +242,13 @@ const noStrandedIslandsAdvanced1Heuristic = (level, island) => {
   return found;
 };
 
-// if you can only have a single bridge to some of the adjecent bridges it may mean you MUST put a bridge on other islands
-// this is a somewhat more complex moreBridgesThanChoicesHeuristic
-const pigeonholeHeuristic = (level, island) => {
+// 2. Must max bridge or stranded:
+//    A - A
+//
+//    X   X - B
+//    |       |
+//    B - B - B   Where A and B CANNOT connect via any other links
+const noStrandedIslandsAdvanced2Heuristic = (level, island) => {
   let adjacentIslands = [];
   for (let i = 0; i < level.islands.length; i++) {
     if (
@@ -236,24 +258,44 @@ const pigeonholeHeuristic = (level, island) => {
       adjacentIslands.push(level.islands[i]);
     }
   }
-  const singleLinkOptions = adjacentIslands.reduce(
-    (sum, aI) => sum + (possibleConnections(level, island, aI) === 1 ? 1 : 0),
-    0
-  );
-  if (
-    (adjacentIslands.length - singleLinkOptions) * 2 - 1 <=
-      island.b - island.n - singleLinkOptions &&
-    singleLinkOptions < adjacentIslands.length
-  ) {
-    adjacentIslands.forEach((adjacentIsland) => {
-      if (possibleConnections(level, island, adjacentIsland) > 1) {
-        addBridge(level, island, adjacentIsland, 1);
-      }
-    });
-    return true;
-  }
-  return false;
+
+  let found = false;
+  adjacentIslands.forEach((adjacentIsland) => {
+    const levelClone = cloneDeep(level);
+    const islandClone = levelClone.islands.find(
+      (i) => i.x === island.x && i.y === island.y
+    );
+    const adjacentClone = levelClone.islands.find(
+      (i) => i.x === adjacentIsland.x && i.y === adjacentIsland.y
+    );
+    addBridge(levelClone, islandClone, adjacentClone);
+    const connectedIslands = getPossiblyConnectedIslands(
+      levelClone,
+      islandClone
+    );
+    if (connectedIslands.length < level.islands.length) {
+      const changed = addMaxBridge(
+        level,
+        island,
+        adjacentIsland,
+        bridgeBetween(level, island, adjacentIsland)
+          ? 1
+          : possibleConnections(level, island, adjacentIsland) - 1
+      );
+      found = found || changed;
+    }
+  });
+  return found;
 };
+
+// TODO:
+// 3. No stranded pigeonhole:
+//    A ----- A
+//
+//    B - X - B  Where the only 2 (or even 3?!) possible links are all adjacent to one island,
+//
+//        Y      Which means that island X is pigeonholed to connect to Y
+// 4. Narrow guess, only 2 islands can connect so you must pick one of those 2
 
 // guess each bridge and see if it is solveable with them
 // this could break certain levels because it won't pay attention
@@ -296,14 +338,15 @@ const solved = (level) =>
   level.islands.reduce((s, island) => s && island.b === island.n, true);
 
 const heuristics = [
-  onlyChoiceHeuristic,
-  onlyChoicesHeuristic,
-  noStrandedIslandsSimpleHeuristic,
-  moreBridgesThanChoicesHeuristic,
-  noStrandedIslandsAdvanced1Heuristic,
-  pigeonholeHeuristic,
-  guessAndCheck(false),
-  guessAndCheck(true),
+  onlyChoiceHeuristic,                  // 0
+  onlyChoicesHeuristic,                 // 1
+  noStrandedIslandsSimpleHeuristic,     // 2
+  moreBridgesThanChoicesHeuristic,      // 3
+  pigeonholeHeuristic,                  // 4
+  noStrandedIslandsAdvanced1Heuristic,  // 5
+  noStrandedIslandsAdvanced2Heuristic,  // 6
+  guessAndCheck(false),                 // 7
+  guessAndCheck(true),                  // 8
 ];
 
 const solve = (

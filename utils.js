@@ -286,7 +286,7 @@ const clear = (level) => {
   delete level.maxBridgesV;
 };
 
-const possiblyConnectedIslands = (level, island, exclude) => {
+const possiblyConnectedIslands = (level, island, exclude = []) => {
   const result = [];
   level.islands.forEach((i) => {
     if (exclude.find((e) => i.x === e.x && i.y === e.y)) {
@@ -303,7 +303,7 @@ const possiblyConnectedIslands = (level, island, exclude) => {
   return result;
 };
 
-const getPossiblyConnectedIslands = (level, startingIsland, exclude) => {
+const getPossiblyConnectedIslands = (level, startingIsland, exclude = []) => {
   const traversingStack = [startingIsland];
   const visited = [startingIsland];
 

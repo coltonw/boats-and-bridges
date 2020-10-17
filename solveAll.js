@@ -10,8 +10,17 @@ const { levels, testLevels } = yaml.safeLoad(
   fs.readFileSync(path.join(__dirname, 'levels.yml'))
 );
 
-[...levels, ...testLevels].forEach((level) => {
+const args = process.argv.slice(2);
+
+[...levels, ...testLevels].forEach((level, i) => {
   try {
+    if (args.length > 0 && args.indexOf('' + i) === -1 && args.indexOf(level.name) === -1) {
+      return;
+    }
+    console.log('');
+    if (level.name) {
+      console.log(level.name);
+    }
     solve(cloneDeep(level));
     hasMultipleSolutions(cloneDeep(level));
   } catch (e) {

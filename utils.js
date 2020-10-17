@@ -1,5 +1,7 @@
 const { forEach } = require('lodash');
 
+const bridgesLeft = (island) => (island.b || 8) - island.n
+
 const bridgeBetween = (level, island0, island1) => {
   let bridge = null;
   if (island0.x === island1.x) {
@@ -82,7 +84,7 @@ const possibleConnections = (level, island0, island1) => {
       }
     });
   }
-  return Math.min(island0.b - island0.n, island1.b - island1.n, maxMax);
+  return Math.min(bridgesLeft(island0), bridgesLeft(island1), maxMax);
 };
 
 const vertAdjacent = (level, island0, island1) => {
@@ -151,7 +153,7 @@ const adjacent = (level, island0, island1) => {
   );
 };
 
-const full = (island) => island.n >= island.b;
+const full = (island) => bridgesLeft(island) <= 0;
 
 const addBridge = (level, island0, island1, n = 1) => {
   if (island0.x === island1.x) {
@@ -321,6 +323,7 @@ const getPossiblyConnectedIslands = (level, startingIsland, exclude = []) => {
 };
 
 module.exports = {
+  bridgesLeft,
   bridgeBetween,
   possibleConnections,
   vertAdjacent,

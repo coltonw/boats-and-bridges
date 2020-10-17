@@ -16,7 +16,7 @@ module.exports = (level) => {
     lines.push(line);
   }
   level.islands.forEach(({ x, y, b }) => {
-    lines[y * 2].splice(x * 2, 1, b);
+    lines[y * 2].splice(x * 2, 1, b || '?');
   });
   level.bridgesH.forEach(({ x0, x1, y, n }) => {
     const str = n <= 1 ? '━' : '═';

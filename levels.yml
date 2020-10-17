@@ -1,6 +1,7 @@
 ---
 levels:
-  - islands:
+  - name: How to play
+    islands:
       - x: 0
         y: 0
         b: 1 # this is the number of bridges required
@@ -16,7 +17,8 @@ levels:
     #   y: 0,
     #   n: 1, // n is number of bridges here (must be 1 or 2)
     bridgesV: []
-  - islands:
+  - name: How to win
+    islands:
       - x: 0
         y: 0
         b: 2
@@ -31,7 +33,8 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - islands:
+  - name: Double Bridge
+    islands:
       - x: 0
         y: 0
         b: 3
@@ -46,7 +49,8 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - islands:
+  - name: No Triple Bridges
+    islands:
       - x: 0
         y: 0
         b: 3
@@ -65,7 +69,8 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - islands:
+  - name: No crossing bridges
+    islands:
       - x: 0
         y: 0
         b: 3
@@ -92,7 +97,8 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - islands:
+  - name: Must connect
+    islands:
       - x: 0
         y: 0
         b: 2
@@ -111,26 +117,23 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - islands:
+  - name: Question mark island
+    islands:
       - x: 0
-        y: 0
-        b: 2
-        n: 0
-      - x: 3
         y: 0
         b: 2
         n: 0
       - x: 1
-        y: 1
-        b: 2
-        n: 0
-      - x: 3
-        y: 1
-        b: 3
+        y: 0
+        b: 1
         n: 0
       - x: 0
-        y: 2
-        b: 3
+        y: 1
+        b: 5
+        n: 0
+      - x: 2
+        y: 1
+        b: null
         n: 0
       - x: 1
         y: 2
@@ -138,11 +141,7 @@ levels:
         n: 0
       - x: 2
         y: 2
-        b: 2
-        n: 0
-      - x: 3
-        y: 2
-        b: 4
+        b: 3
         n: 0
       - x: 0
         y: 3
@@ -150,19 +149,12 @@ levels:
         n: 0
       - x: 2
         y: 3
-        b: 2
-        n: 0
-      - x: 0
-        y: 4
-        b: 3
-        n: 0
-      - x: 3
-        y: 4
-        b: 4
+        b: 1
         n: 0
     bridgesH: []
     bridgesV: []
-  - islands:
+  - name: Grappling hooks
+    islands:
       - x: 0
         y: 0
         b: 3
@@ -210,6 +202,58 @@ levels:
       - x: 1
         y: 4
         b: 1
+        n: 0
+    bridgesH: []
+    bridgesV: []
+  - name: Bad Level
+    islands:
+      - x: 0
+        y: 0
+        b: 2
+        n: 0
+      - x: 3
+        y: 0
+        b: 2
+        n: 0
+      - x: 1
+        y: 1
+        b: 2
+        n: 0
+      - x: 3
+        y: 1
+        b: 3
+        n: 0
+      - x: 0
+        y: 2
+        b: 3
+        n: 0
+      - x: 1
+        y: 2
+        b: 2
+        n: 0
+      - x: 2
+        y: 2
+        b: 2
+        n: 0
+      - x: 3
+        y: 2
+        b: 4
+        n: 0
+      - x: 0
+        y: 3
+        b: 3
+        n: 0
+      - x: 2
+        y: 3
+        b: 2
+        n: 0
+      - x: 0
+        y: 4
+        b: 3
+        n: 0
+      - x: 3
+        y: 4
+        b: 4
         n: 0
     bridgesH: []
     bridgesV: []

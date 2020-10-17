@@ -63,10 +63,6 @@ const addMaxBridge = (level, island0, island1, max = 1) => {
   }
 };
 
-// TODO: Split out several of these heuristics into a "simple" version
-// which ignores current bridges and a normal version which pays attention
-// to possibleConnections only
-
 // if there is only one island that can connect, connect to that island
 const onlyChoiceHeuristic = (level, island) => {
   let adjacentIsland = null;
@@ -94,7 +90,7 @@ const onlyChoiceHeuristic = (level, island) => {
   }
 };
 
-// if the adjacent possible bridges left fill all remaining bridges needed
+// the adjacent possible bridges fill all remaining bridges needed
 const onlyChoicesHeuristic = (level, island) => {
   let adjacentIslands = [];
   for (let i = 0; i < level.islands.length; i++) {
@@ -298,8 +294,6 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island) => {
 // 4. Narrow guess, only 2 islands can connect so you must pick one of those 2
 
 // guess each bridge and see if it is solveable with them
-// this could break certain levels because it won't pay attention
-// to making sure all islands are connected
 const guessAndCheck = (nested) => (level, island) => {
   let adjacentIslands = [];
   // TODO: for efficiency we could only check adjacency to islands with a greater index than ourselves.

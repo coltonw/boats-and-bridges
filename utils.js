@@ -1,6 +1,6 @@
 const { forEach } = require('lodash');
 
-const bridgesLeft = (island) => (island.b || 8) - island.n
+const bridgesLeft = (island) => (island.b || 8) - island.n;
 
 const bridgeBetween = (level, island0, island1) => {
   let bridge = null;
@@ -256,9 +256,9 @@ const connectedIslands = (level, island) => {
   return result;
 };
 
-const getConnectedIslands = (level, island) => {
-  const traversingStack = [island];
-  const visited = [island];
+const getConnectedIslands = (level, startingIsland) => {
+  const traversingStack = [startingIsland];
+  const visited = [startingIsland];
 
   while (traversingStack.length > 0) {
     const island = traversingStack.pop();
@@ -276,6 +276,87 @@ const getConnectedIslands = (level, island) => {
 const fullyConnected = (level) => {
   const connectedIslands = getConnectedIslands(level, level.islands[0]);
   return connectedIslands.length === level.islands.length;
+};
+
+// water coordinates are to the bottom right of island coordinates
+// e.g. water 0 0 will be in between island 0 0 and island 1 1
+const connectedWater = (level, water) => {
+  const result = [];
+  let up = true;
+  let down = true;
+  let left = true;
+  let right = true;
+  level.bridgesH.forEach((bridgeH) => {
+    if (bridgeH.x0 <= water.x && bridgeH.x1 > water.x) {
+      if (bridgeH.y === water.y) {
+        up = false;
+      }
+      if (bridgeH.y === water.y + 1) {
+        down = false;
+      }
+    }
+  });
+  level.bridgesV.forEach((bridgeV) => {
+    if (bridgeV.y0 <= water.y && bridgeV.y1 > water.y) {
+      if (bridgeV.x === water.x) {
+        left = false;
+      }
+      if (bridgeV.x === water.x + 1) {
+        right = false;
+      }
+    }
+  });
+
+  // min x and y is -1 max x and y is max island x and y respectively
+  if (water.x <= -1) {
+    left = false;
+  }
+  if (water.y <= -1) {
+    up = false;
+  }
+  let maxX = 0;
+  let maxY = 0;
+  level.islands.forEach((island) => {
+    maxX = Math.max(maxX, island.x);
+    maxY = Math.max(maxY, island.y);
+  });
+  if (water.x >= maxX) {
+    right = false;
+  }
+  if (water.y >= maxY) {
+    down = false;
+  }
+
+  if (up) {
+    result.push({ x: water.x, y: water.y - 1 });
+  }
+  if (down) {
+    result.push({ x: water.x, y: water.y + 1 });
+  }
+  if (left) {
+    result.push({ x: water.x - 1, y: water.y });
+  }
+  if (right) {
+    result.push({ x: water.x + 1, y: water.y });
+  }
+  return result;
+};
+
+const getConnectedWater = (level, startingWater) => {
+  const traversingStack = [startingWater];
+  const visited = [startingWater];
+
+  while (traversingStack.length > 0) {
+    const water = traversingStack.pop();
+    const connected = connectedWater(level, water);
+    connected.forEach((cW) => {
+      if (!visited.find((w) => w.x === cW.x && w.y === cW.y)) {
+        visited.push(cW);
+        traversingStack.unshift(cW);
+      }
+    });
+  }
+  return visited;
 };
 
 const clear = (level) => {
@@ -335,4 +416,5 @@ module.exports = {
   fullyConnected,
   clear,
   getPossiblyConnectedIslands,
+  getConnectedWater,
 };

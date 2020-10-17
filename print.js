@@ -18,6 +18,22 @@ module.exports = (level) => {
   level.islands.forEach(({ x, y, b }) => {
     lines[y * 2].splice(x * 2, 1, b || '?');
   });
+  if (level.boats) {
+    level.boats.forEach(
+      ({ boat: { x: bx, y: by }, dock: { x: dx, y: dy } }, i) => {
+        lines[by * 2 + 1].splice(
+          bx * 2 + 1,
+          1,
+          'b' + (level.boats.length > 1 ? i : '')
+        );
+        lines[dy * 2 + 1].splice(
+          dx * 2 + 1,
+          1,
+          'd' + (level.boats.length > 1 ? i : '')
+        );
+      }
+    );
+  }
   level.bridgesH.forEach(({ x0, x1, y, n }) => {
     const str = n <= 1 ? '━' : '═';
     const insert = [];
@@ -35,7 +51,7 @@ module.exports = (level) => {
   lines.forEach((line) => {
     let lineStr = ' ';
     for (let i = 0; i < line.length; i++) {
-      if (i > 0) {
+      if (i > 0 && ('' + line[i]).length <= 1) {
         // We want things spaced a bit for visual clarity but we want to make sure bridges don't have a bunch of gaps in them
         if (line[i - 1] === line[i]) {
           lineStr += line[i];

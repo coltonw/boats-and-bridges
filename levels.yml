@@ -153,6 +153,41 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
+  - name: First boat
+    islands:
+      - x: 0
+        y: 0
+        b: 2
+        n: 0
+      - x: 1
+        y: 0
+        b: 3
+        n: 0
+      - x: 2
+        y: 0
+        b: null
+        n: 0
+      - x: 0
+        y: 1
+        b: 3
+        n: 0
+      - x: 1
+        y: 1
+        b: null
+        n: 0
+      - x: 2
+        y: 1
+        b: 4
+        n: 0
+    boats:
+      - boat:
+          x: 1
+          y: 0
+        dock:
+          x: 0
+          y: 0
+    bridgesH: []
+    bridgesV: []
   - name: Grappling hooks
     islands:
       - x: 0

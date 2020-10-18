@@ -359,6 +359,11 @@ const getConnectedWater = (level, startingWater) => {
   return visited;
 };
 
+const connectedByWater = (level, boat, dock) => {
+  const connectedWater = getConnectedWater(level, boat);
+  return !!connectedWater.find((w) => w.x === dock.x && w.y === dock.y);
+};
+
 const clear = (level) => {
   level.islands.forEach((i) => {
     i.n = 0;
@@ -417,4 +422,5 @@ module.exports = {
   clear,
   getPossiblyConnectedIslands,
   getConnectedWater,
+  connectedByWater,
 };

@@ -10,7 +10,7 @@ const {
   addBridge,
   fullyConnected,
   getPossiblyConnectedIslands,
-  getConnectedWater,
+  connectedByWater,
 } = require('./utils');
 
 /**
@@ -223,8 +223,8 @@ const noBlockedBoatsHeuristic = (level, island) => {
     addBridge(levelClone, islandClone, adjacentClone);
     let strandedBoat = false;
     forEach(level.boats, ({ boat, dock }) => {
-      const connectedWater = getConnectedWater(levelClone, boat);
-      if (!connectedWater.find((w) => w.x === dock.x && w.y === dock.y)) {
+      const connected = connectedByWater(levelClone, boat, dock);
+      if (!connected) {
         strandedBoat = true;
         return false;
       }
@@ -368,6 +368,52 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island) => {
 //        Y      Which means that island X is pigeonholed to connect to Y
 // 4. Narrow guess, only 2 islands can connect so you must pick one of those 2
 
+// TODO
+// This is for a situation where multiple bridges together would block a boat which pigeonholes bridges onto all the islands that are not one of those
+// Z   X   Y  X cannot connect to both Ys because it blocks the boat, so it MUST connect to Z
+//       b |
+//     Y - ?
+const noBlockedBoatsPigeonholeHeuristic = (level, island) => {
+  // WIP
+  if (!level.boats) {
+    return false;
+  }
+  let adjacentIslands = [];
+  for (let i = 0; i < level.islands.length; i++) {
+    if (
+      adjacent(level, island, level.islands[i]) &&
+      possibleConnections(level, island, level.islands[i]) > 0
+    ) {
+      adjacentIslands.push(level.islands[i]);
+    }
+  }
+  let found = false;
+
+  adjacentIslands.forEach((adjacentIsland) => {
+    const levelClone = cloneDeep(level);
+    const islandClone = levelClone.islands.find(
+      (i) => i.x === island.x && i.y === island.y
+    );
+    const adjacentClone = levelClone.islands.find(
+      (i) => i.x === adjacentIsland.x && i.y === adjacentIsland.y
+    );
+    addBridge(levelClone, islandClone, adjacentClone);
+    let strandedBoat = false;
+    forEach(level.boats, ({ boat, dock }) => {
+      const connectedWater = getConnectedWater(levelClone, boat);
+      if (!connectedWater.find((w) => w.x === dock.x && w.y === dock.y)) {
+        strandedBoat = true;
+        return false;
+      }
+    });
+    if (strandedBoat) {
+      const changed = addMaxBridge(level, island, adjacentIsland, 0);
+      found = found || changed;
+    }
+  });
+  return found;
+};
+
 // guess each bridge and see if it is solveable with them
 const guessAndCheck = (nested) => (level, island) => {
   let adjacentIslands = [];
@@ -407,7 +453,12 @@ const solved = (level) =>
   level.islands.reduce(
     (s, island) => s && (!island.b || island.b === island.n),
     true
-  );
+  ) &&
+  (!level.boats ||
+    level.boats.reduce(
+      (s, { boat, dock }) => s && connectedByWater(level, boat, dock),
+      true
+    ));
 
 const heuristics = [
   onlyChoiceSimpleHeuristic, // 0

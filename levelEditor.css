@@ -1,0 +1,58 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#level {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  background-color: aqua;
+  height: 900px;
+  width: 900px;
+}
+
+.island {
+  position: absolute;
+  background-color: sandybrown;
+  height: 30px;
+  width: 30px;
+  margin: 15px;
+  text-align: center;
+  font-size: 26px;
+  user-select: none;
+  border-radius: 100%;
+}
+
+.bridgeH,
+.bridgeV {
+  position: absolute;
+}
+
+.bridgeH {
+  margin-top: 27px;
+  height: 2px;
+  border-top: solid black 2px;
+}
+
+.bridgeH.double {
+  border-bottom: solid black 2px;
+}
+
+.bridgeV {
+  margin-left: 27px;
+  width: 2px;
+  border-left: solid black 2px;
+}
+
+.bridgeV.double {
+  border-right: solid black 2px;
+}
+
+#yaml {
+  position: absolute;
+  left: 940px;
+  bottom: 20px;
+  width: 300px;
+  height: 600px;
+}

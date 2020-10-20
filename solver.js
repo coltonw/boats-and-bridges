@@ -11,6 +11,7 @@ const {
   fullyConnected,
   getPossiblyConnectedIslands,
   connectedByWater,
+  clear,
 } = require('./utils');
 
 /**
@@ -188,8 +189,17 @@ const moreBridgesThanChoicesHeuristic = (level, island) => {
       adjacentIslands.push(level.islands[i]);
     }
   }
-  if (adjacentIslands.length * 2 - 1 <= bridgesLeft(island)) {
-    adjacentIslands.forEach((adjacentIsland) => {
+
+  const notConnected = adjacentIslands.filter(
+    (aI) => !bridgeBetween(level, island, aI)
+  );
+
+  if (
+    notConnected.length > 0 &&
+    adjacentIslands.length * 2 - 1 <=
+      bridgesLeft(island) + adjacentIslands.length - notConnected.length
+  ) {
+    notConnected.forEach((adjacentIsland) => {
       addBridge(level, island, adjacentIsland, 1);
     });
     return true;
@@ -366,7 +376,7 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island) => {
 //    B - X - B  Where the only 2 (or even 3?!) possible links are all adjacent to one island,
 //
 //        Y      Which means that island X is pigeonholed to connect to Y
-// 4. Narrow guess, only 2 islands can connect so you must pick one of those 2
+// 5. Narrow guess, only 2 islands can connect so you must pick one of those 2
 
 // TODO
 // This is for a situation where multiple bridges together would block a boat which pigeonholes bridges onto all the islands that are not one of those
@@ -559,13 +569,6 @@ solve.hasMultipleSolutions = (level, quiet = false) => {
     }
     forEach(adjacentIslands, (adjacentIsland) => {
       try {
-        const levelClone = cloneDeep(level);
-        const islandClone = levelClone.islands.find(
-          ({ x, y }) => island.x === x && island.y === y
-        );
-        const adjacentIslandClone = levelClone.islands.find(
-          ({ x, y }) => adjacentIsland.x === x && adjacentIsland.y === y
-        );
         const bridge = bridgeBetween(
           solvedLevel,
           solvedLevel.islands[i],
@@ -574,12 +577,13 @@ solve.hasMultipleSolutions = (level, quiet = false) => {
           )
         );
         const numBridges = bridge ? 2 : 1;
-        addBridge(levelClone, islandClone, adjacentIslandClone, numBridges);
-        solve(levelClone, true);
-        if (fullyConnected(levelClone)) {
+        clear(level);
+        addBridge(level, island, adjacentIsland, numBridges);
+        solve(level, true);
+        if (fullyConnected(level)) {
           found = true;
           quiet || console.log('Other solution:');
-          quiet || print(levelClone);
+          quiet || print(level);
           return false;
         }
       } catch (e) {}

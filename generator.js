@@ -209,17 +209,19 @@ const generateInteresting = (w, h, quiet = false) => {
       continue;
     }
     if (
-      solutionData.heuristicsApplied.indexOf(1) === -1 ||
       solutionData.heuristicsApplied.indexOf(2) === -1 ||
-      solutionData.heuristicsApplied.indexOf(3) === -1
+      solutionData.heuristicsApplied.indexOf(3) === -1 ||
+      solutionData.heuristicsApplied.indexOf(4) === -1
     ) {
       quiet || console.log('Rejected for being boring 1.');
       continue;
     }
 
     if (
-      solutionData.heuristicsApplied.indexOf(4) === -1 &&
-      solutionData.heuristicsApplied.indexOf(5) === -1
+      solutionData.heuristicsApplied.indexOf(5) === -1 &&
+      solutionData.heuristicsApplied.indexOf(6) === -1 &&
+      solutionData.heuristicsApplied.indexOf(7) === -1 &&
+      solutionData.heuristicsApplied.indexOf(8) === -1
     ) {
       quiet || console.log('Rejected for being boring 2.');
       continue;
@@ -245,7 +247,7 @@ const generateInteresting = (w, h, quiet = false) => {
 
 const levels = [];
 for (let i = 0; i < 3; i++) {
-  const level = generateInteresting(15, 15, true);
+  const level = generateInteresting(10, 10, true);
   const { complexity } = solve(level, true);
   clear(level);
   levels.push([complexity, level]);

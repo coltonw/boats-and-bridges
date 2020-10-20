@@ -401,7 +401,9 @@ const getPossiblyConnectedIslands = (level, startingIsland, exclude = []) => {
     connected.forEach((cI) => {
       if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
         visited.push(cI);
-        traversingStack.unshift(cI);
+        if (cI.b > 1) {
+          traversingStack.unshift(cI);
+        }
       }
     });
   }

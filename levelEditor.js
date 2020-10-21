@@ -55,8 +55,9 @@ const run = (quiet = false) => {
           renderLevel();
           timeouts.push(setTimeout(() => run(true), 2000));
         } else if (
-          solution.heuristicsApplied.indexOf(9) > -1 ||
-          solution.heuristicsApplied.indexOf(10) > -1
+          solution.heuristicsApplied.indexOf(solver.heuristics.length - 2) >
+            -1 ||
+          solution.heuristicsApplied.indexOf(solver.heuristics.length - 1) > -1
         ) {
           clear(level);
           try {

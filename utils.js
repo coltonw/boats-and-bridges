@@ -410,6 +410,18 @@ const getPossiblyConnectedIslands = (level, startingIsland, exclude = []) => {
   return visited;
 };
 
+const islandPairs = (islands, onlyOrthogonal = false) => {
+  const pairs = [];
+  for (let i = 0; i < islands.length - 1; i++) {
+    for (let j = i + 1; j < islands.length; j++) {
+      if (!onlyOrthogonal || islands[i].y !== islands[j].y) {
+        pairs.push([islands[i], islands[j]]);
+      }
+    }
+  }
+  return pairs;
+};
+
 module.exports = {
   bridgesLeft,
   bridgeBetween,
@@ -425,4 +437,5 @@ module.exports = {
   getPossiblyConnectedIslands,
   getConnectedWater,
   connectedByWater,
+  islandPairs,
 };

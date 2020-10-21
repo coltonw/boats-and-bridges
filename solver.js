@@ -12,6 +12,7 @@ const {
   getPossiblyConnectedIslands,
   connectedByWater,
   clear,
+  islandPairs,
 } = require('./utils');
 
 /**
@@ -370,7 +371,13 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island) => {
 };
 
 // TODO:
-// 3. No stranded pigeonhole:
+// Unfillable island pigeonhole
+//    A   X   B
+//
+//        B   Y  Putting remaining bridges at the Bs would cause Y to be unfillable, so you must connect to A
+
+// TODO:
+// No stranded pigeonhole:
 //    A ----- A
 //
 //    B - X - B  Where the only 2 (or even 3?!) possible links are all adjacent to one island,
@@ -383,9 +390,9 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island) => {
 // Z   X   Y  X cannot connect to both Ys because it blocks the boat, so it MUST connect to Z
 //       b |
 //     Y - ?
-const noBlockedBoatsPigeonholeHeuristic = (level, island) => {
+const noBlockedBoatsPigeonholeHeuristic = (advanced) => (level, island) => {
   // WIP
-  if (!level.boats) {
+  if (!level.boats || !island.b) {
     return false;
   }
   let adjacentIslands = [];
@@ -397,28 +404,89 @@ const noBlockedBoatsPigeonholeHeuristic = (level, island) => {
       adjacentIslands.push(level.islands[i]);
     }
   }
+  const disconnectedIslands = adjacentIslands.filter(
+    (aI) => !bridgeBetween(level, island, aI)
+  );
   let found = false;
-
-  adjacentIslands.forEach((adjacentIsland) => {
+  const pairs = islandPairs(disconnectedIslands);
+  pairs.forEach(([aI1, aI2]) => {
     const levelClone = cloneDeep(level);
     const islandClone = levelClone.islands.find(
       (i) => i.x === island.x && i.y === island.y
     );
-    const adjacentClone = levelClone.islands.find(
-      (i) => i.x === adjacentIsland.x && i.y === adjacentIsland.y
+    const aI1Clone = levelClone.islands.find(
+      (i) => i.x === aI1.x && i.y === aI1.y
     );
-    addBridge(levelClone, islandClone, adjacentClone);
+    addBridge(levelClone, islandClone, aI1Clone);
+    const aI2Clone = levelClone.islands.find(
+      (i) => i.x === aI2.x && i.y === aI2.y
+    );
+    addBridge(levelClone, islandClone, aI2Clone);
     let strandedBoat = false;
     forEach(level.boats, ({ boat, dock }) => {
-      const connectedWater = getConnectedWater(levelClone, boat);
-      if (!connectedWater.find((w) => w.x === dock.x && w.y === dock.y)) {
+      const connected = connectedByWater(levelClone, boat, dock);
+      if (!connected) {
         strandedBoat = true;
         return false;
       }
     });
     if (strandedBoat) {
-      const changed = addMaxBridge(level, island, adjacentIsland, 0);
-      found = found || changed;
+      // there are three situations here
+      // 1. bridgesLeft - (max bridges to one blocking island) is equal to all bridges in the non-blocking islands, so we just fill them up
+      // 2. bridgesLeft - (max bridges to one blocking island) is greater than non-blocking islands possible choices (aka 1 for 1 non-blocking island or 3 for 2 non-blocking islands)
+      // 3. ADVANCED ONLY - bridgesLeft - (max bridges to one blocking island) is 2 and there is one non-blocking island with only 1 possible connection, then a bridge is pigeonholed onto the other island
+      //    Separated the advanced one because it is more complicated
+      const nonBlockingIslands = adjacentIslands.filter(
+        (aI) =>
+          !(
+            (aI.x === aI1.x && aI.y === aI1.y) ||
+            (aI.x === aI2.x && aI.y === aI2.y)
+          )
+      );
+      const possibleBridges = nonBlockingIslands.reduce(
+        (s, aI) => s + possibleConnections(level, island, aI),
+        0
+      );
+      const maxBlockingBridges = Math.max(
+        possibleConnections(level, island, aI1),
+        possibleConnections(level, island, aI2)
+      );
+      // 1
+      if (bridgesLeft(island) - maxBlockingBridges === possibleBridges) {
+        nonBlockingIslands.forEach((nBI) => {
+          const changed = addBridge(
+            level,
+            island,
+            nBI,
+            possibleConnections(level, island, nBI)
+          );
+          found = found || changed;
+        });
+      } else if (
+        bridgesLeft(island) - maxBlockingBridges >
+        (adjacentIslands.length - 3) * 2
+      ) {
+        // 2
+        nonBlockingIslands.forEach((aI) => {
+          const changed = addBridge(level, island, aI, 1);
+          found = found || changed;
+        });
+      } else if (
+        advanced &&
+        bridgesLeft(island) - maxBlockingBridges === 2 &&
+        nonBlockingIslands.find(
+          (nBI) => possibleConnections(level, island, nBI) === 1
+        )
+      ) {
+        // 3
+        const pigeonholed = nonBlockingIslands.find(
+          (nBI) => possibleConnections(level, island, nBI) === 2
+        );
+        if (pigeonholed) {
+          const changed = addBridge(level, island, pigeonholed, 1);
+          found = found || changed;
+        }
+      }
     }
   });
   return found;
@@ -480,8 +548,10 @@ const heuristics = [
   pigeonholeHeuristic, // 6
   noStrandedIslandsAdvanced1Heuristic, // 7
   noStrandedIslandsAdvanced2Heuristic, // 8
-  guessAndCheck(false), // 9
-  guessAndCheck(true), // 10
+  noBlockedBoatsPigeonholeHeuristic(false), // 9
+  noBlockedBoatsPigeonholeHeuristic(true), // 10
+  guessAndCheck(false), // 11
+  guessAndCheck(true), // 12
 ];
 
 const solve = (
@@ -505,11 +575,14 @@ const solve = (
     for (let h = 0; h < heurLen; h++) {
       forEach(level.islands, (island) => {
         if (!full(island)) {
+          const clonedLevel = cloneDeep(level);
           const heuristicWorked = heuristics[h](level, island);
           if (heuristicWorked) {
+            if (!quiet && h >= heuristics.length - 2) {
+              console.log('Before guess:');
+              print(clonedLevel);
+            }
             solutionData.heuristicsApplied.push(h);
-            quiet || console.log(h);
-            quiet || print(level);
             somethingChanged = true;
             return false;
           }
@@ -547,6 +620,8 @@ const solve = (
 // TODO: Add other mechanics AKA questions marks or boats or whatever
 
 module.exports = solve;
+
+solve.heuristics = heuristics;
 
 solve.hasMultipleSolutions = (level, quiet = false) => {
   const solvedLevel = cloneDeep(level);

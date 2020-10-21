@@ -1318,7 +1318,7 @@ testLevels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - name: splice
+  - name: Boat pigeonholed
     islands:
       - x: 0
         'y': 0
@@ -1334,7 +1334,7 @@ testLevels:
         'n': 0
       - x: 0
         'y': 1
-        b: 3
+        b: 4
         'n': 0
       - x: 1
         'y': 1
@@ -1343,6 +1343,14 @@ testLevels:
       - x: 2
         'y': 1
         b: 2
+        'n': 0
+      - x: 0
+        'y': 3
+        b: 2
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 1
         'n': 0
     bridgesH: []
     bridgesV: []

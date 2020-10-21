@@ -49,6 +49,37 @@ body {
   border-right: solid black 2px;
 }
 
+.sail {
+  position: absolute;
+  width: 16px;
+  height: 26px;
+  margin: 12px 0 0 17px;
+  background: linear-gradient(
+    to bottom right,
+    aqua 0%,
+    aqua 50%,
+    white 50%,
+    white 100%
+  );
+}
+
+.boat {
+  position: absolute;
+  width: 25px;
+  height: 4px;
+  margin: 42px 0 0 17px;
+  background-color: blue;
+}
+
+.dock {
+  position: absolute;
+  width: 20px;
+  height: 10px;
+  margin: 8px 0 0 5px;
+  transform: rotate(45deg);
+  background-color: brown;
+}
+
 #yaml {
   position: absolute;
   left: 940px;

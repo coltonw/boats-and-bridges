@@ -118,6 +118,44 @@ const renderLevel = () => {
 
     levelElement.appendChild(bridgeEl);
   });
+
+  level.boats.forEach(({ boat, dock }) => {
+    if (boat) {
+      const sailEl = document.createElement('div');
+      sailEl.setAttribute('class', 'sail');
+      sailEl.setAttribute(
+        'style',
+        `left: ${(levelElement.offsetWidth / scale) * (boat.x + 0.5)}px; top: ${
+          (levelElement.offsetHeight / scale) * (boat.y + 0.5)
+        }px;`
+      );
+
+      levelElement.appendChild(sailEl);
+
+      const boatEl = document.createElement('div');
+      boatEl.setAttribute('class', 'boat');
+      boatEl.setAttribute(
+        'style',
+        `left: ${(levelElement.offsetWidth / scale) * (boat.x + 0.5)}px; top: ${
+          (levelElement.offsetHeight / scale) * (boat.y + 0.5)
+        }px;`
+      );
+
+      levelElement.appendChild(boatEl);
+    }
+
+    if (dock) {
+      const dockEl = document.createElement('div');
+      dockEl.setAttribute('class', 'dock');
+      dockEl.setAttribute(
+        'style',
+        `left: ${(levelElement.offsetWidth / scale) * (dock.x + 0.5)}px; top: ${
+          (levelElement.offsetHeight / scale) * (dock.y + 0.5)
+        }px;`
+      );
+      levelElement.appendChild(dockEl);
+    }
+  });
 };
 
 const deleteIsland = ({ x, y }) => {
@@ -138,22 +176,44 @@ levelElement.onclick = (ev) => {
     offsetY += el.offsetTop;
     el = el.parentNode;
   }
-  const x = Math.floor((offsetX / levelElement.offsetWidth) * scale);
-  const y = Math.floor((offsetY / levelElement.offsetHeight) * scale);
-
-  let island = level.islands.find(
-    ({ x: foundX, y: foundY }) => foundX === x && foundY === y
-  );
-  if (island) {
-    if (!island.b) {
-      deleteIsland(island);
-    } else if (island.b < 8) {
-      island.b++;
+  const xScaled = (offsetX / levelElement.offsetWidth) * scale;
+  const yScaled = (offsetY / levelElement.offsetHeight) * scale;
+  if (
+    Math.abs(0.5 - (xScaled % 1)) > 0.3 &&
+    Math.abs(0.5 - (yScaled % 1)) > 0.3
+  ) {
+    // boat
+    const x = Math.floor(xScaled - 0.5);
+    const y = Math.floor(yScaled - 0.5);
+    const boatInProgress = level.boats.find(({ boat, dock }) => !boat || !dock);
+    if (boatInProgress) {
+      if (!boatInProgress.boat) {
+        boatInProgress.boat = { x, y };
+      } else {
+        boatInProgress.dock = { x, y };
+      }
     } else {
-      island.b = null;
+      level.boats.push({ boat: { x, y }, dock: null });
     }
   } else {
-    level.islands.push({ x, y, b: 1, n: 0 });
+    // island
+    const x = Math.floor(xScaled);
+    const y = Math.floor(yScaled);
+
+    let island = level.islands.find(
+      ({ x: foundX, y: foundY }) => foundX === x && foundY === y
+    );
+    if (island) {
+      if (!island.b) {
+        deleteIsland(island);
+      } else if (island.b < 8) {
+        island.b++;
+      } else {
+        island.b = null;
+      }
+    } else {
+      level.islands.push({ x, y, b: 1, n: 0 });
+    }
   }
 
   save();
@@ -170,22 +230,59 @@ levelElement.onauxclick = function (ev) {
     offsetY += el.offsetTop;
     el = el.parentNode;
   }
-  const x = Math.floor((offsetX / levelElement.offsetWidth) * scale);
-  const y = Math.floor((offsetY / levelElement.offsetHeight) * scale);
-
-  let island = level.islands.find(
-    ({ x: foundX, y: foundY }) => foundX === x && foundY === y
-  );
-  if (island) {
-    if (!island.b) {
-      island.b = 8;
-    } else if (island.b > 1) {
-      island.b--;
-    } else {
-      deleteIsland(island);
+  const xScaled = (offsetX / levelElement.offsetWidth) * scale;
+  const yScaled = (offsetY / levelElement.offsetHeight) * scale;
+  if (
+    Math.abs(0.5 - (xScaled % 1)) > 0.3 &&
+    Math.abs(0.5 - (yScaled % 1)) > 0.3
+  ) {
+    // boat
+    const x = Math.floor(xScaled - 0.5);
+    const y = Math.floor(yScaled - 0.5);
+    const dockToDelete = level.boats.find(
+      ({ dock }) => dock && dock.x === x && dock.y === y
+    );
+    const boatToDelete = level.boats.find(
+      ({ boat }) => boat && boat.x === x && boat.y === y
+    );
+    if (dockToDelete) {
+      if (!dockToDelete.boat) {
+        dockToDelete.delete = true;
+      } else {
+        dockToDelete.dock = null;
+      }
+    } else if (boatToDelete) {
+      if (!boatToDelete.dock) {
+        boatToDelete.delete = true;
+      } else {
+        boatToDelete.boat = null;
+      }
+    }
+    for (let i = 0; i < level.boats.length; i++) {
+      if (level.boats[i].delete) {
+        level.boats.splice(i, 1);
+        break;
+      }
     }
   } else {
-    level.islands.push({ x, y, b: null, n: 0 });
+    // island
+    const x = Math.floor(xScaled);
+    const y = Math.floor(yScaled);
+
+    let island = level.islands.find(
+      ({ x: foundX, y: foundY }) => foundX === x && foundY === y
+    );
+    if (island) {
+      if (!island.b) {
+        island.b = 8;
+      } else if (island.b > 1) {
+        island.b--;
+      } else {
+        deleteIsland(island);
+      }
+    } else {
+      level.islands.push({ x, y, b: null, n: 0 });
+    }
   }
 
   save();

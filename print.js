@@ -1,11 +1,17 @@
 module.exports = (level) => {
-  const maxX = level.islands.reduce(
-    (max, island) => Math.max(max, island.x),
-    0
+  const maxX = Math.max(
+    level.islands.reduce((max, island) => Math.max(max, island.x), 0),
+    level.boats.reduce(
+      (max, { boat, dock }) => Math.max(max, boat.x, dock.x),
+      0
+    ) + 1
   );
-  const maxY = level.islands.reduce(
-    (max, island) => Math.max(max, island.y),
-    0
+  const maxY = Math.max(
+    level.islands.reduce((max, island) => Math.max(max, island.y), 0),
+    level.boats.reduce(
+      (max, { boat, dock }) => Math.max(max, boat.y, dock.y),
+      0
+    ) + 1
   );
   const lines = [];
   for (let i = 0; i <= maxY * 2; i++) {

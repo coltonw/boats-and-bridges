@@ -508,6 +508,8 @@ const solve = (
           const heuristicWorked = heuristics[h](level, island);
           if (heuristicWorked) {
             solutionData.heuristicsApplied.push(h);
+            quiet || console.log(h);
+            quiet || print(level);
             somethingChanged = true;
             return false;
           }

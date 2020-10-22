@@ -40,7 +40,8 @@ const run = (quiet = false) => {
   clear(level);
   let solution = null;
   try {
-    solution = solver(level, quiet);
+    // No nested guessing because it takes too long and crashes the browser
+    solution = solver(level, quiet, false, true);
   } catch (e) {
     console.log(e);
   }

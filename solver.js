@@ -110,6 +110,7 @@ const onlyChoiceHeuristic = (level, island) => {
       adjacentIsland = level.islands[i];
     }
   }
+
   if (adjacentIsland) {
     const n = Math.min(bridgesLeft(island), bridgesLeft(adjacentIsland), 2);
     addBridge(level, island, adjacentIsland, n);
@@ -243,7 +244,7 @@ const pigeonholeHeuristic = (level, island) => {
   return false;
 };
 
-// there are a few possible variations of stranded island heuristics:
+// Stranded island heuristic:
 // 1. Must connect or stranded:
 //    A - X   X - B   Where A and B CANNOT connect via any other links
 const noStrandedIslandsAdvanced1Heuristic = (level, island) => {
@@ -285,6 +286,7 @@ const noStrandedIslandsAdvanced1Heuristic = (level, island) => {
   return found;
 };
 
+// Stranded island heuristic:
 // 2. Must max bridge or stranded:
 //    A - A
 //
@@ -429,14 +431,13 @@ const unfillableIslandPigeonholeHeuristic = (advanced) => (level, island) => {
   return found;
 };
 
-// TODO:
-// No stranded pigeonhole:
+// Stranded island heuristic:
+// TODO 3. No stranded pigeonhole:
 //    A ----- A
 //
 //    B - X - B  Where the only 2 (or even 3?!) possible links are all adjacent to one island,
 //
 //        Y      Which means that island X is pigeonholed to connect to Y
-// 5. Narrow guess, only 2 islands can connect so you must pick one of those 2
 
 // This is for a situation where multiple bridges together would block a boat which pigeonholes bridges onto all the islands that are not one of those
 // Z   X   Y  X cannot connect to both Ys because it blocks the boat, so it MUST connect to Z
@@ -534,6 +535,11 @@ const noBlockedBoatsPigeonholeHeuristic = (advanced) => (level, island) => {
   });
   return found;
 };
+
+// TODO we could do some narrow guess heuristics.
+// They aren't great puzzle solving so I am deciding whether to bother.
+// Basically, if a a stranded island has two choices where to connect, you can guess and check one of those.
+// There may be other variations with other mechanics e.g. boats
 
 // guess each bridge and see if it is solveable with them
 const guessAndCheck = (nested) => (level, island) => {
@@ -664,8 +670,6 @@ const solve = (
   quiet || print(level);
   return solutionData;
 };
-
-// TODO: Add other mechanics AKA questions marks or boats or whatever
 
 module.exports = solve;
 

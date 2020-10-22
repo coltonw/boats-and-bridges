@@ -35,6 +35,7 @@ const bridgeBetween = (level, island0, island1) => {
 const possibleConnections = (level, island0, island1) => {
   let maxMax = 2;
   if (island0.x === island1.x) {
+    let maxBridgeVMax = 2;
     if (level.maxBridgesV) {
       forEach(level.maxBridgesV, (maxBridgeV) => {
         if (
@@ -43,6 +44,7 @@ const possibleConnections = (level, island0, island1) => {
           maxBridgeV.y1 === Math.max(island0.y, island1.y)
         ) {
           maxMax = Math.min(maxMax, maxBridgeV.max);
+          maxBridgeVMax = maxBridgeV.max;
           return false;
         }
       });
@@ -54,12 +56,13 @@ const possibleConnections = (level, island0, island1) => {
         bridgeV.y0 === Math.min(island0.y, island1.y) &&
         bridgeV.y1 === Math.max(island0.y, island1.y)
       ) {
-        maxMax = Math.min(maxMax, 2 - bridgeV.n);
+        maxMax = Math.min(maxMax, maxBridgeVMax - bridgeV.n);
         return false;
       }
     });
   }
   if (island0.y === island1.y) {
+    let maxBridgeHMax = 2;
     if (level.maxBridgesH) {
       forEach(level.maxBridgesH, (maxBridgeH) => {
         if (
@@ -68,6 +71,7 @@ const possibleConnections = (level, island0, island1) => {
           maxBridgeH.x1 === Math.max(island0.x, island1.x)
         ) {
           maxMax = Math.min(maxMax, maxBridgeH.max);
+          maxBridgeHMax = maxBridgeH.max;
           return false;
         }
       });
@@ -79,7 +83,7 @@ const possibleConnections = (level, island0, island1) => {
         bridgeH.x0 === Math.min(island0.x, island1.x) &&
         bridgeH.x1 === Math.max(island0.x, island1.x)
       ) {
-        maxMax = Math.min(maxMax, 2 - bridgeH.n);
+        maxMax = Math.min(maxMax, maxBridgeHMax - bridgeH.n);
         return false;
       }
     });

@@ -401,7 +401,7 @@ const getPossiblyConnectedIslands = (level, startingIsland, exclude = []) => {
     connected.forEach((cI) => {
       if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
         visited.push(cI);
-        if (cI.b > 1) {
+        if (!cI.b || cI.b > 1) {
           traversingStack.unshift(cI);
         }
       }
@@ -414,12 +414,28 @@ const islandPairs = (islands, onlyOrthogonal = false) => {
   const pairs = [];
   for (let i = 0; i < islands.length - 1; i++) {
     for (let j = i + 1; j < islands.length; j++) {
-      if (!onlyOrthogonal || islands[i].y !== islands[j].y) {
+      if (
+        !onlyOrthogonal ||
+        (islands[i].x !== islands[j].x && islands[i].y !== islands[j].y)
+      ) {
         pairs.push([islands[i], islands[j]]);
       }
     }
   }
   return pairs;
+};
+
+const getAdjacentIslands = (level, island) => {
+  let adjacentIslands = [];
+  for (let i = 0; i < level.islands.length; i++) {
+    if (
+      adjacent(level, island, level.islands[i]) &&
+      possibleConnections(level, island, level.islands[i]) > 0
+    ) {
+      adjacentIslands.push(level.islands[i]);
+    }
+  }
+  return adjacentIslands;
 };
 
 module.exports = {
@@ -438,4 +454,5 @@ module.exports = {
   getConnectedWater,
   connectedByWater,
   islandPairs,
+  getAdjacentIslands,
 };

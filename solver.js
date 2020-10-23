@@ -342,7 +342,6 @@ const unfillableIslandPigeonholeHeuristic = (advanced) => (level, island) => {
     const fIX = aI1.x !== island.x ? aI1.x : aI2.x;
     const fIY = aI1.y !== island.y ? aI1.y : aI2.y;
     const farIsland = level.islands.find((fI) => fI.x === fIX && fI.y === fIY);
-
     if (
       farIsland &&
       farIsland.b &&
@@ -364,7 +363,11 @@ const unfillableIslandPigeonholeHeuristic = (advanced) => (level, island) => {
       const filledBridgesLeft1 =
         bridgesLeft(aI1) - possibleConnections(level, island, aI1);
       const filledBridgesLeft2 =
-        bridgesLeft(aI2) - possibleConnections(level, island, aI2);
+        bridgesLeft(aI2) -
+        Math.min(
+          possibleConnections(level, island, aI2),
+          bridgesLeft(island) - possibleConnections(level, island, aI1)
+        );
 
       if (
         filledBridgesLeft1 + filledBridgesLeft2 >=
@@ -393,6 +396,7 @@ const unfillableIslandPigeonholeHeuristic = (advanced) => (level, island) => {
         bridgesLeft(farIsland) -
         otherConnections -
         (filledBridgesLeft1 + filledBridgesLeft2);
+
       // 1
       if (fillElsewhereBridges === possibleBridges) {
         nonBlockingIslands.forEach((nBI) => {
@@ -661,7 +665,7 @@ const solve = (
     }
   }
   solutionData.complexity =
-    solutionData.heuristicsApplied.reduce((s, n) => s + n) /
+    solutionData.heuristicsApplied.reduce((s, n) => s + n, 0) /
     solutionData.heuristicsApplied.length;
   quiet ||
     console.log(

@@ -12,6 +12,14 @@ body {
   width: 900px;
 }
 
+button {
+  margin: 20px 10px;
+}
+
+button:first-of-type {
+  margin-left: 20px;
+}
+
 .island {
   position: absolute;
   background-color: sandybrown;

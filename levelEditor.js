@@ -18,6 +18,8 @@ const level = storedLevel || {
   bridgesV: [],
 };
 
+let showBridges = true;
+
 let timeouts = [];
 
 const save = () => {
@@ -90,36 +92,37 @@ const renderLevel = () => {
 
     levelElement.appendChild(islandEl);
   });
+  if (showBridges) {
+    level.bridgesH.forEach(({ x0, x1, y, n }) => {
+      const bridgeEl = document.createElement('div');
+      bridgeEl.setAttribute('class', `bridgeH ${n > 1 ? 'double' : ''}`);
+      bridgeEl.setAttribute(
+        'style',
+        `left: ${
+          (levelElement.offsetWidth / scale) * (x0 + 0.5) + 18
+        }px; top: ${(levelElement.offsetHeight / scale) * y}px; width: ${
+          (levelElement.offsetWidth / scale) * (x1 - x0 - 0.5) - 6
+        }px;`
+      );
 
-  level.bridgesH.forEach(({ x0, x1, y, n }) => {
-    const bridgeEl = document.createElement('div');
-    bridgeEl.setAttribute('class', `bridgeH ${n > 1 ? 'double' : ''}`);
-    bridgeEl.setAttribute(
-      'style',
-      `left: ${(levelElement.offsetWidth / scale) * (x0 + 0.5) + 18}px; top: ${
-        (levelElement.offsetHeight / scale) * y
-      }px; width: ${
-        (levelElement.offsetWidth / scale) * (x1 - x0 - 0.5) - 6
-      }px;`
-    );
+      levelElement.appendChild(bridgeEl);
+    });
 
-    levelElement.appendChild(bridgeEl);
-  });
+    level.bridgesV.forEach(({ x, y0, y1, n }) => {
+      const bridgeEl = document.createElement('div');
+      bridgeEl.setAttribute('class', `bridgeV ${n > 1 ? 'double' : ''}`);
+      bridgeEl.setAttribute(
+        'style',
+        `left: ${(levelElement.offsetWidth / scale) * x}px; top: ${
+          (levelElement.offsetHeight / scale) * (y0 + 0.5) + 18
+        }px; height: ${
+          (levelElement.offsetHeight / scale) * (y1 - y0 - 0.5) - 6
+        }px;`
+      );
 
-  level.bridgesV.forEach(({ x, y0, y1, n }) => {
-    const bridgeEl = document.createElement('div');
-    bridgeEl.setAttribute('class', `bridgeV ${n > 1 ? 'double' : ''}`);
-    bridgeEl.setAttribute(
-      'style',
-      `left: ${(levelElement.offsetWidth / scale) * x}px; top: ${
-        (levelElement.offsetHeight / scale) * (y0 + 0.5) + 18
-      }px; height: ${
-        (levelElement.offsetHeight / scale) * (y1 - y0 - 0.5) - 6
-      }px;`
-    );
-
-    levelElement.appendChild(bridgeEl);
-  });
+      levelElement.appendChild(bridgeEl);
+    });
+  }
 
   level.boats.forEach(({ boat, dock }) => {
     if (boat) {
@@ -300,6 +303,83 @@ const resetButtonEl = document.getElementById('reset');
 resetButtonEl.onclick = (ev) => {
   level.islands = [];
   level.boats = [];
+  save();
+  run();
+};
+
+const hideBridgesButtonEl = document.getElementById('hideBridges');
+
+hideBridgesButtonEl.onclick = (ev) => {
+  showBridges = !showBridges;
+  if (showBridges) {
+    hideBridgesButtonEl.innerHTML = 'Hide Bridges';
+  } else {
+    hideBridgesButtonEl.innerHTML = 'Show Bridges';
+  }
+  run();
+};
+
+const compressEl = document.getElementById('compress');
+
+compressEl.onclick = (ev) => {
+  const xCompress = [];
+  const yCompress = [];
+
+  const [xMaxIsl, yMaxIsl] = level.islands.reduce(
+    ([mx, my], { x, y }) => [Math.max(mx, x), Math.max(my, y)],
+    [0, 0]
+  );
+  const [xMax, yMax] = level.boats.reduce(
+    ([mx, my], { boat, dock }) => {
+      const xMaxChoices = [mx];
+      const yMaxChoices = [my];
+      if (boat) {
+        xMaxChoices.push(boat.x);
+        yMaxChoices.push(boat.y);
+      }
+      if (dock) {
+        xMaxChoices.push(dock.x);
+        yMaxChoices.push(dock.y);
+      }
+      return [Math.max(...xMaxChoices), Math.max(...yMaxChoices)];
+    },
+    [xMaxIsl, yMaxIsl]
+  );
+
+  let compress = 0;
+  for (let i = 0; i <= xMax; i++) {
+    const found = level.islands.find(({ x }) => x === i);
+    if (!found) {
+      compress += 1;
+    }
+    xCompress.push(compress);
+  }
+  compress = 0;
+  for (let i = 0; i <= yMax; i++) {
+    const found = level.islands.find(({ y }) => y === i);
+    if (!found) {
+      compress += 1;
+    }
+    yCompress.push(compress);
+  }
+
+  console.log(xCompress, yCompress);
+
+  level.islands.forEach((island) => {
+    island.x = island.x - xCompress[island.x];
+    island.y = island.y - yCompress[island.y];
+  });
+
+  level.boats.forEach(({ boat, dock }) => {
+    if (boat) {
+      boat.x = boat.x - xCompress[boat.x];
+      boat.y = boat.y - yCompress[boat.y];
+    }
+    if (dock) {
+      dock.x = dock.x - xCompress[dock.x];
+      dock.y = dock.y - yCompress[dock.y];
+    }
+  });
   save();
   run();
 };

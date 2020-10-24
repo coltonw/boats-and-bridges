@@ -38,6 +38,18 @@ const generateYaml = () => {
   yamlEl.value = levelYaml;
 };
 
+const loadYaml = () => {
+  const yamlEl = document.getElementById('yaml');
+  const yamlStr = yamlEl.value;
+  try {
+    const levelYaml = yaml.load(yamlStr);
+    level.islands = levelYaml.islands;
+    level.boats = levelYaml.boats;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 const run = (quiet = false) => {
   clear(level);
   let solution = null;
@@ -80,6 +92,16 @@ const run = (quiet = false) => {
 
   renderLevel();
 };
+
+const boatColors = [
+  'green',
+  'gold',
+  'steel',
+  'purple',
+  'orange',
+  'deeppink',
+  'palevioletred',
+];
 
 const renderLevel = () => {
   levelElement.innerHTML = '';
@@ -129,7 +151,7 @@ const renderLevel = () => {
     });
   }
 
-  level.boats.forEach(({ boat, dock }) => {
+  level.boats.forEach(({ boat, dock }, i) => {
     if (boat) {
       const sailEl = document.createElement('div');
       sailEl.setAttribute('class', 'sail');
@@ -142,13 +164,26 @@ const renderLevel = () => {
 
       levelElement.appendChild(sailEl);
 
+      const jibEl = document.createElement('div');
+      jibEl.setAttribute('class', 'jib-sail');
+      jibEl.setAttribute(
+        'style',
+        `left: ${(levelElement.offsetWidth / scale) * (boat.x + 0.5)}px; top: ${
+          (levelElement.offsetHeight / scale) * (boat.y + 0.5)
+        }px;`
+      );
+
+      levelElement.appendChild(jibEl);
+
       const boatEl = document.createElement('div');
       boatEl.setAttribute('class', 'boat');
       boatEl.setAttribute(
         'style',
         `left: ${(levelElement.offsetWidth / scale) * (boat.x + 0.5)}px; top: ${
           (levelElement.offsetHeight / scale) * (boat.y + 0.5)
-        }px;`
+        }px;${
+          level.boats.length > 1 ? `background-color: ${boatColors[i]};` : ''
+        }`
       );
 
       levelElement.appendChild(boatEl);
@@ -161,7 +196,9 @@ const renderLevel = () => {
         'style',
         `left: ${(levelElement.offsetWidth / scale) * (dock.x + 0.5)}px; top: ${
           (levelElement.offsetHeight / scale) * (dock.y + 0.5)
-        }px;`
+        }px;${
+          level.boats.length > 1 ? `background-color: ${boatColors[i]};` : ''
+        }`
       );
       levelElement.appendChild(dockEl);
     }
@@ -386,6 +423,13 @@ compressEl.onclick = (ev) => {
     }
   });
   save();
+  run();
+};
+
+const yamlEl = document.getElementById('yaml');
+
+yamlEl.onchange = (ev) => {
+  loadYaml();
   run();
 };
 

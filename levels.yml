@@ -447,6 +447,69 @@ levels:
     bridgesH: []
     bridgesV: []
     boats: []
+  - name: Erin
+    islands:
+      - x: 0
+        y: 0
+        b: 3
+        n: 0
+      - x: 2
+        y: 0
+        b: 3
+        n: 0
+      - x: 3
+        y: 0
+        b: 2
+        n: 0
+      - x: 0
+        y: 1
+        b: 5
+        n: 0
+      - x: 1
+        y: 1
+        b: 2
+        n: 0
+      - x: 0
+        y: 2
+        b: 3
+        n: 0
+      - x: 3
+        y: 2
+        b: 3
+        n: 0
+      - x: 3
+        y: 3
+        b: 5
+        n: 0
+      - x: 4
+        y: 3
+        b: 2
+        n: 0
+      - x: 3
+        y: 4
+        b: 4
+        n: 0
+      - x: 4
+        y: 4
+        b: 3
+        n: 0
+      - x: 1
+        y: 5
+        b: 1
+        n: 0
+      - x: 4
+        y: 5
+        b: 2
+        n: 0
+    boats:
+      - boat:
+          x: 3
+          y: 3
+        dock:
+          x: 0
+          y: 0
+    bridgesH: []
+    bridgesV: []
   - name: Tunnel
     islands:
       - x: 0
@@ -690,69 +753,127 @@ levels:
           y: 0
     bridgesH: []
     bridgesV: []
-  - name: Erin
+  - name: Around the outside
     islands:
       - x: 0
-        y: 0
+        'y': 0
         b: 3
-        n: 0
+        'n': 0
       - x: 2
-        y: 0
-        b: 3
-        n: 0
-      - x: 3
-        y: 0
-        b: 2
-        n: 0
-      - x: 0
-        y: 1
-        b: 5
-        n: 0
-      - x: 1
-        y: 1
-        b: 2
-        n: 0
-      - x: 0
-        y: 2
-        b: 3
-        n: 0
-      - x: 3
-        y: 2
-        b: 3
-        n: 0
-      - x: 3
-        y: 3
-        b: 5
-        n: 0
-      - x: 4
-        y: 3
-        b: 2
-        n: 0
-      - x: 3
-        y: 4
+        'y': 0
         b: 4
-        n: 0
+        'n': 0
       - x: 4
-        y: 4
+        'y': 0
         b: 3
-        n: 0
-      - x: 1
-        y: 5
-        b: 1
-        n: 0
-      - x: 4
-        y: 5
+        'n': 0
+      - x: 6
+        'y': 0
+        b: 5
+        'n': 0
+      - x: 7
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 0
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 1
         b: 2
-        n: 0
+        'n': 0
+      - x: 7
+        'y': 1
+        b: 2
+        'n': 0
+      - x: 5
+        'y': 2
+        b: 2
+        'n': 0
+      - x: 6
+        'y': 2
+        b: 2
+        'n': 0
+      - x: 0
+        'y': 3
+        b: 5
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 2
+        'n': 0
+      - x: 4
+        'y': 3
+        b: 4
+        'n': 0
+      - x: 5
+        'y': 3
+        b: 5
+        'n': 0
+      - x: 6
+        'y': 3
+        b: 4
+        'n': 0
+      - x: 7
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 8
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 6
+        'y': 4
+        b: 2
+        'n': 0
+      - x: 7
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 8
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 6
+        b: 2
+        'n': 0
+      - x: 7
+        'y': 6
+        b: 4
+        'n': 0
+    bridgesH: []
+    bridgesV: []
     boats:
       - boat:
           x: 3
-          y: 3
+          'y': 4
         dock:
           x: 0
-          y: 0
-    bridgesH: []
-    bridgesV: []
+          'y': 0
+      - boat:
+          x: 7
+          'y': 3
+        dock:
+          x: 4
+          'y': 0
   - name: Advanced Grappling
     islands:
       - x: 0
@@ -1022,7 +1143,7 @@ levels:
           x: 3
           'y': 1
 
-  # generated level
+generated:
   - name: Nice generated
     islands:
       - x: 5
@@ -2027,103 +2148,6 @@ testLevels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - name: bleh
-    islands:
-      - x: 0
-        'y': 0
-        b: 3
-        'n': 0
-      - x: 2
-        'y': 0
-        b: 5
-        'n': 0
-      - x: 7
-        'y': 0
-        b: 2
-        'n': 0
-      - x: 0
-        'y': 3
-        b: 2
-        'n': 0
-      - x: 2
-        'y': 3
-        b: 6
-        'n': 0
-      - x: 5
-        'y': 3
-        b: 3
-        'n': 0
-      - x: 7
-        'y': 3
-        b: 4
-        'n': 0
-      - x: 1
-        'y': 4
-        b: 2
-        'n': 0
-      - x: 2
-        'y': 4
-        b: 2
-        'n': 0
-      - x: 5
-        'y': 4
-        b: 1
-        'n': 0
-      - x: 7
-        'y': 5
-        b: 5
-        'n': 0
-      - x: 9
-        'y': 5
-        b: 3
-        'n': 0
-      - x: 2
-        'y': 7
-        b: 4
-        'n': 0
-      - x: 3
-        'y': 7
-        b: 2
-        'n': 0
-      - x: 5
-        'y': 7
-        b: 4
-        'n': 0
-      - x: 7
-        'y': 7
-        b: 3
-        'n': 0
-      - x: 1
-        'y': 8
-        b: 3
-        'n': 0
-      - x: 4
-        'y': 8
-        b: 2
-        'n': 0
-      - x: 2
-        'y': 9
-        b: 2
-        'n': 0
-      - x: 5
-        'y': 9
-        b: 1
-        'n': 0
-      - x: 1
-        'y': 10
-        b: 2
-        'n': 0
-      - x: 4
-        'y': 10
-        b: 4
-        'n': 0
-      - x: 9
-        'y': 10
-        b: 3
-        'n': 0
-    bridgesH: []
-    bridgesV: []
-    boats: []
 
 debugLevels:
   - name: crash

@@ -7,7 +7,7 @@ body {
   position: absolute;
   left: 20px;
   bottom: 20px;
-  background-color: aqua;
+  background-color: #20b2aa;
   height: 900px;
   width: 900px;
 }
@@ -22,10 +22,13 @@ button:first-of-type {
 
 .island {
   position: absolute;
-  background-color: sandybrown;
+  background-color: #d8bd6d;
+  border: 3px solid #96fffa;
+  border-top-width: 1px;
+  border-bottom-width: 4px;
   height: 30px;
   width: 30px;
-  margin: 15px;
+  margin: 14px 12px 11px;
   text-align: center;
   font-size: 26px;
   user-select: none;
@@ -59,13 +62,27 @@ button:first-of-type {
 
 .sail {
   position: absolute;
-  width: 16px;
-  height: 26px;
-  margin: 12px 0 0 17px;
+  width: 14px;
+  height: 24px;
+  margin: 14px 0 0 17px;
   background: linear-gradient(
     to bottom right,
-    aqua 0%,
-    aqua 50%,
+    #20b2aa 0%,
+    #20b2aa 50%,
+    white 50%,
+    white 100%
+  );
+}
+
+.jib-sail {
+  position: absolute;
+  width: 10px;
+  height: 19px;
+  margin: 19px 0 0 33px;
+  background: linear-gradient(
+    to bottom left,
+    #20b2aa 0%,
+    #20b2aa 50%,
     white 50%,
     white 100%
   );
@@ -74,8 +91,15 @@ button:first-of-type {
 .boat {
   position: absolute;
   width: 25px;
-  height: 4px;
+  height: 7px;
   margin: 42px 0 0 17px;
+  background: radial-gradient(
+    at top,
+    transparent,
+    transparent 14px,
+    #20b2aa 14px,
+    #20b2aa 100%
+  );
   background-color: blue;
 }
 
@@ -83,9 +107,16 @@ button:first-of-type {
   position: absolute;
   width: 20px;
   height: 10px;
-  margin: 8px 0 0 5px;
+  margin: 9px 0 0 6px;
   transform: rotate(45deg);
-  background-color: brown;
+  background: repeating-linear-gradient(
+    to left,
+    transparent,
+    transparent 4px,
+    black 4px,
+    black 5px
+  );
+  background-color: #855e42;
 }
 
 #yaml {

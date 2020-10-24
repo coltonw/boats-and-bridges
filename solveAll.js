@@ -6,13 +6,13 @@ const solve = require('./solver');
 
 const hasMultipleSolutions = solve.hasMultipleSolutions;
 
-const { levels, testLevels } = yaml.safeLoad(
+const { levels, generated, testLevels } = yaml.safeLoad(
   fs.readFileSync(path.join(__dirname, 'levels.yml'))
 );
 
 const args = process.argv.slice(2);
 
-[...levels] //, ...testLevels]
+[...levels] //, ...generated, ...testLevels]
   .forEach((level, i) => {
     try {
       if (

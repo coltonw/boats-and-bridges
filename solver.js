@@ -679,9 +679,14 @@ module.exports = solve;
 
 solve.heuristics = heuristics;
 
-solve.hasMultipleSolutions = (level, quiet = false) => {
+solve.hasMultipleSolutions = (
+  level,
+  quiet = false,
+  noGuessing = false,
+  noNestedGuessing = false
+) => {
   const solvedLevel = cloneDeep(level);
-  solve(solvedLevel, true);
+  solve(solvedLevel, true, noGuessing, noNestedGuessing);
   let found = false;
   forEach(level.islands, (island, i) => {
     let adjacentIslands = [];
@@ -712,7 +717,7 @@ solve.hasMultipleSolutions = (level, quiet = false) => {
         const numBridges = bridge ? 2 : 1;
         clear(level);
         addBridge(level, island, adjacentIsland, numBridges);
-        solve(level, true);
+        solve(level, true, noGuessing, noNestedGuessing);
         if (fullyConnected(level)) {
           found = true;
           quiet || console.log('Other solution:');

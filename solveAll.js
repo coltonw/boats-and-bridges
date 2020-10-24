@@ -12,22 +12,23 @@ const { levels, testLevels } = yaml.safeLoad(
 
 const args = process.argv.slice(2);
 
-[...levels, ...testLevels].forEach((level, i) => {
-  try {
-    if (
-      args.length > 0 &&
-      args.indexOf('' + i) === -1 &&
-      args.indexOf(level.name) === -1
-    ) {
-      return;
+[...levels] //, ...testLevels]
+  .forEach((level, i) => {
+    try {
+      if (
+        args.length > 0 &&
+        args.indexOf('' + i) === -1 &&
+        args.indexOf(level.name) === -1
+      ) {
+        return;
+      }
+      console.log('');
+      if (level.name) {
+        console.log(level.name);
+      }
+      solve(cloneDeep(level));
+      hasMultipleSolutions(cloneDeep(level));
+    } catch (e) {
+      console.log(e);
     }
-    console.log('');
-    if (level.name) {
-      console.log(level.name);
-    }
-    solve(cloneDeep(level));
-    hasMultipleSolutions(cloneDeep(level));
-  } catch (e) {
-    console.log(e);
-  }
-});
+  });

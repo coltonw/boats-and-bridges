@@ -601,8 +601,8 @@ const heuristics = [
   onlyChoiceSimpleHeuristic, // 0
   onlyChoiceHeuristic, // 1
   onlyChoicesHeuristic, // 2
-  noStrandedIslandsSimpleHeuristic, // 3
-  moreBridgesThanChoicesHeuristic, // 4
+  moreBridgesThanChoicesHeuristic, // 3 (swapped with 4)
+  noStrandedIslandsSimpleHeuristic, // 4 (swapped with 3)
   noBlockedBoatsHeuristic, // 5
   pigeonholeHeuristic, // 6
   noStrandedIslandsAdvanced1Heuristic, // 7

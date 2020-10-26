@@ -82,14 +82,19 @@ const onlyChoiceSimpleHeuristic = (level, island) => {
     adjacentIsland &&
     possibleConnections(level, island, adjacentIsland) > 0
   ) {
-    let n = 1;
     if (island.b && adjacentIsland.b) {
-      n = Math.min(bridgesLeft(island), bridgesLeft(adjacentIsland), 2);
+      const n = Math.min(bridgesLeft(island), bridgesLeft(adjacentIsland), 2);
+      addBridge(level, island, adjacentIsland, n);
+    } else if (island.b || !bridgeBetween(level, island, adjacentIsland)) {
+      addBridge(level, island, adjacentIsland, 1);
+    } else {
+      return false;
     }
-    addBridge(level, island, adjacentIsland, n);
     return true;
-  } else {
+  } else if (island.b) {
     throw new Error('Unsolvable. Island with no adjacent islands.');
+  } else {
+    return false;
   }
 };
 

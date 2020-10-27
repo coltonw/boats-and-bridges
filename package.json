@@ -2,8 +2,9 @@
   "name": "boatsandbridges",
   "version": "0.0.1",
   "description": "",
-  "main": "solver.js",
+  "main": "solveAll.js",
   "scripts": {
+    "solve": "node solveAll.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:levelEditor": "webpack"
   },

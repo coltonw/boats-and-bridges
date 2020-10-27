@@ -621,8 +621,8 @@ const solve = (
   noGuessing = false,
   noNestedGuessing = false
 ) => {
-  quiet || console.log('Unsolved:');
-  quiet || print(level);
+  // quiet || console.log('Unsolved:');
+  // quiet || print(level);
   let solutionData = {
     loops: 0,
     heuristicsApplied: [],

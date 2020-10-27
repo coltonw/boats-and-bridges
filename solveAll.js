@@ -29,8 +29,9 @@ levelsToInclude.forEach((level, i) => {
     }
     console.log('');
     if (level.name) {
-      console.log(level.name);
+      console.log((args.length === 0 ? `Level ${i + 1}: ` : '') + level.name);
     }
+
     solve(cloneDeep(level), false, true);
     // hasMultipleSolutions(cloneDeep(level));
   } catch (e) {

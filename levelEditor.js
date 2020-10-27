@@ -96,7 +96,7 @@ const run = (quiet = false) => {
 const boatColors = [
   'green',
   'gold',
-  'steel',
+  'steelblue',
   'purple',
   'orange',
   'deeppink',

@@ -429,6 +429,18 @@ const islandPairs = (islands, onlyOrthogonal = false) => {
   return pairs;
 };
 
+const islandTriples = (islands) => {
+  const triples = [];
+  for (let i = 0; i < islands.length - 2; i++) {
+    for (let j = i + 1; j < islands.length - 1; j++) {
+      for (let k = j + 1; k < islands.length; k++) {
+        triples.push([islands[i], islands[j], islands[k]]);
+      }
+    }
+  }
+  return triples;
+};
+
 const getAdjacentIslands = (level, island) => {
   let adjacentIslands = [];
   for (let i = 0; i < level.islands.length; i++) {
@@ -458,5 +470,6 @@ module.exports = {
   getConnectedWater,
   connectedByWater,
   islandPairs,
+  islandTriples,
   getAdjacentIslands,
 };

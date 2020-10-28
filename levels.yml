@@ -1495,6 +1495,121 @@ levels:
     bridgesH: []
     bridgesV: []
     boats: []
+  - name: Triple Boat Tango
+    islands:
+      - x: 0
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 0
+        b: 5
+        'n': 0
+      - x: 2
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 1
+        b: null
+        'n': 0
+      - x: 0
+        'y': 2
+        b: null
+        'n': 0
+      - x: 1
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 2
+        b: null
+        'n': 0
+      - x: 3
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 0
+        'y': 3
+        b: 5
+        'n': 0
+      - x: 1
+        'y': 3
+        b: 1
+        'n': 0
+      - x: 1
+        'y': 4
+        b: null
+        'n': 0
+      - x: 2
+        'y': 4
+        b: 6
+        'n': 0
+      - x: 3
+        'y': 4
+        b: null
+        'n': 0
+      - x: 0
+        'y': 5
+        b: null
+        'n': 0
+      - x: 1
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 5
+        b: 5
+        'n': 0
+      - x: 3
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 0
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 6
+        b: null
+        'n': 0
+      - x: 3
+        'y': 6
+        b: null
+        'n': 0
+      - x: 0
+        'y': 7
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 7
+        b: 5
+        'n': 0
+      - x: 2
+        'y': 7
+        b: 3
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 0
+          'y': 6
+        dock:
+          x: 1
+          'y': 6
+      - boat:
+          x: 1
+          'y': 4
+        dock:
+          x: 1
+          'y': 0
+      - boat:
+          x: 2
+          'y': 5
+        dock:
+          x: 2
+          'y': 2
   - name: Snaking Around
     islands:
       - x: 0
@@ -1620,7 +1735,6 @@ levels:
         dock:
           x: 3
           'y': 0
-
   - name: Bloomin Questions
     islands:
       - x: 4
@@ -2724,95 +2838,6 @@ testLevels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - name: bug
-    islands:
-      - x: 6
-        'y': 2
-        b: null
-        'n': 0
-      - x: 6
-        'y': 3
-        b: 2
-        'n': 0
-      - x: 4
-        'y': 4
-        b: null
-        'n': 0
-      - x: 5
-        'y': 4
-        b: 2
-        'n': 0
-      - x: 6
-        'y': 4
-        b: 3
-        'n': 0
-      - x: 3
-        'y': 5
-        b: null
-        'n': 0
-      - x: 7
-        'y': 5
-        b: null
-        'n': 0
-      - x: 8
-        'y': 5
-        b: 2
-        'n': 0
-      - x: 3
-        'y': 6
-        b: 2
-        'n': 0
-      - x: 4
-        'y': 6
-        b: 3
-        'n': 0
-      - x: 6
-        'y': 6
-        b: 4
-        'n': 0
-      - x: 8
-        'y': 6
-        b: 3
-        'n': 0
-      - x: 9
-        'y': 6
-        b: 2
-        'n': 0
-      - x: 2
-        'y': 7
-        b: null
-        'n': 0
-      - x: 4
-        'y': 7
-        b: 2
-        'n': 0
-      - x: 5
-        'y': 7
-        b: null
-        'n': 0
-      - x: 9
-        'y': 7
-        b: null
-        'n': 0
-      - x: 5
-        'y': 8
-        b: 2
-        'n': 0
-      - x: 6
-        'y': 8
-        b: 3
-        'n': 0
-      - x: 6
-        'y': 9
-        b: 2
-        'n': 0
-      - x: 7
-        'y': 9
-        b: null
-        'n': 0
-    bridgesH: []
-    bridgesV: []
-    boats: []
   - name: Lexi
     islands:
       - x: 0
@@ -2896,6 +2921,117 @@ testLevels:
         dock:
           x: 4
           'y': 4
+  - name: Water essentially blocked
+    islands:
+      - x: 4
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 7
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 3
+        b: null
+        'n': 0
+      - x: 1
+        'y': 5
+        b: null
+        'n': 0
+      - x: 4
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 7
+        'y': 5
+        b: null
+        'n': 0
+      - x: 10
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 7
+        b: 5
+        'n': 0
+      - x: 4
+        'y': 7
+        b: 1
+        'n': 0
+      - x: 4
+        'y': 8
+        b: null
+        'n': 0
+      - x: 7
+        'y': 8
+        b: 6
+        'n': 0
+      - x: 10
+        'y': 8
+        b: null
+        'n': 0
+      - x: 1
+        'y': 10
+        b: null
+        'n': 0
+      - x: 4
+        'y': 10
+        b: 4
+        'n': 0
+      - x: 7
+        'y': 10
+        b: 5
+        'n': 0
+      - x: 10
+        'y': 10
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 12
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 12
+        b: null
+        'n': 0
+      - x: 10
+        'y': 13
+        b: null
+        'n': 0
+      - x: 1
+        'y': 14
+        b: 3
+        'n': 0
+      - x: 4
+        'y': 14
+        b: 5
+        'n': 0
+      - x: 7
+        'y': 14
+        b: 3
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 1
+          'y': 13
+        dock:
+          x: 4
+          'y': 12
+      - boat:
+          x: 6
+          'y': 9
+        dock:
+          x: 4
+          'y': 1
+      - boat:
+          x: 9
+          'y': 12
+        dock:
+          x: 7
+          'y': 5
 
 debugLevels:
   - name: crash

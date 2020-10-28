@@ -1,5 +1,5 @@
 // the lodash forEach allows returning false to stop it
-const { cloneDeep, forEach, find, filter } = require('lodash');
+const { cloneDeep, forEach, partition } = require('lodash');
 const print = require('./print');
 const {
   bridgesLeft,
@@ -13,6 +13,7 @@ const {
   connectedByWater,
   clear,
   islandPairs,
+  islandTriples,
   getAdjacentIslands,
 } = require('./utils');
 
@@ -448,6 +449,143 @@ const unfillableIslandPigeonholeHeuristic = (advanced) => (level, island) => {
 //
 //        Y      Which means that island X is pigeonholed to connect to Y
 
+const noBlockedPairsHelper = (level, island, disconnectedIslands) => {
+  let unblockingPair = null;
+  const pairs = islandPairs(disconnectedIslands);
+  let twoUnblockingPairs = false;
+  forEach(pairs, ([aI1, aI2]) => {
+    const levelClone = cloneDeep(level);
+    const islandClone = levelClone.islands.find(
+      (i) => i.x === island.x && i.y === island.y
+    );
+    const aI1Clone = levelClone.islands.find(
+      (i) => i.x === aI1.x && i.y === aI1.y
+    );
+    addBridge(levelClone, islandClone, aI1Clone);
+    const aI2Clone = levelClone.islands.find(
+      (i) => i.x === aI2.x && i.y === aI2.y
+    );
+    addBridge(levelClone, islandClone, aI2Clone);
+    let strandedBoat = false;
+    forEach(level.boats, ({ boat, dock }) => {
+      const connected = connectedByWater(levelClone, boat, dock);
+      if (!connected) {
+        strandedBoat = true;
+        return false;
+      }
+    });
+    if (!strandedBoat) {
+      if (!unblockingPair) {
+        unblockingPair = [aI1, aI2];
+      } else {
+        twoUnblockingPairs = true;
+        return false;
+      }
+    }
+  });
+  if (twoUnblockingPairs || !unblockingPair) {
+    return false;
+  } else {
+    let changed = false;
+    const blockingIslands = disconnectedIslands.filter(
+      (aI) =>
+        !(
+          (aI.x === unblockingPair[0].x && aI.y === unblockingPair[0].y) ||
+          (aI.x === unblockingPair[1].x && aI.y === unblockingPair[1].y)
+        )
+    );
+    blockingIslands.forEach((bI) => {
+      changed = changed || addMaxBridge(level, island, bI, 0);
+    });
+    return changed;
+  }
+};
+
+const noBlockedTriplesHelper = (level, island, disconnectedIslands) => {
+  let unblockingTriple = null;
+  const triples = islandTriples(disconnectedIslands);
+  let twoUnblockingTriples = false;
+  forEach(triples, ([aI1, aI2, aI3]) => {
+    const levelClone = cloneDeep(level);
+    const islandClone = levelClone.islands.find(
+      (i) => i.x === island.x && i.y === island.y
+    );
+    const aI1Clone = levelClone.islands.find(
+      (i) => i.x === aI1.x && i.y === aI1.y
+    );
+    addBridge(levelClone, islandClone, aI1Clone);
+    const aI2Clone = levelClone.islands.find(
+      (i) => i.x === aI2.x && i.y === aI2.y
+    );
+    addBridge(levelClone, islandClone, aI2Clone);
+    const aI3Clone = levelClone.islands.find(
+      (i) => i.x === aI3.x && i.y === aI3.y
+    );
+    addBridge(levelClone, islandClone, aI3Clone);
+    let strandedBoat = false;
+    forEach(level.boats, ({ boat, dock }) => {
+      const connected = connectedByWater(levelClone, boat, dock);
+      if (!connected) {
+        strandedBoat = true;
+        return false;
+      }
+    });
+    if (!strandedBoat) {
+      if (!unblockingTriple) {
+        unblockingTriple = [aI1, aI2, aI3];
+      } else {
+        twoUnblockingTriples = true;
+        return false;
+      }
+    }
+  });
+  if (twoUnblockingTriples || !unblockingTriple) {
+    return false;
+  } else {
+    let changed = false;
+    const blockingIslands = disconnectedIslands.filter(
+      (aI) =>
+        !(
+          (aI.x === unblockingTriple[0].x && aI.y === unblockingTriple[0].y) ||
+          (aI.x === unblockingTriple[1].x && aI.y === unblockingTriple[1].y) ||
+          (aI.x === unblockingTriple[2].x && aI.y === unblockingTriple[2].y)
+        )
+    );
+    blockingIslands.forEach((bI) => {
+      changed = changed || addMaxBridge(level, island, bI, 0);
+    });
+    return changed;
+  }
+};
+
+// Only choices no blocked boats heuristic
+//     A     X     A
+//     |  b     d  |
+//     ? --- B ----?  X must connect to at least two islands so the we know it cannot connect to B or it will block in the dock or block in the boat
+const onlyChoicesNoBlockedBoatsHeuristic = (level, island) => {
+  if (!level.boats || !island.b) {
+    return false;
+  }
+  const adjacentIslands = getAdjacentIslands(level, island);
+  const [connectedIslands, disconnectedIslands] = partition(
+    adjacentIslands,
+    (aI) => bridgeBetween(level, island, aI)
+  );
+  const mustUseBridges =
+    island.b -
+    connectedIslands.reduce(
+      (sum, cI) => sum + possibleConnections(level, island, cI),
+      0
+    );
+  let found = false;
+  if (mustUseBridges > 4) {
+    found = noBlockedTriplesHelper(level, island, disconnectedIslands);
+  } else if (mustUseBridges > 2) {
+    found = noBlockedPairsHelper(level, island, disconnectedIslands);
+  }
+  return found;
+};
+
 // This is for a situation where multiple bridges together would block a boat which pigeonholes bridges onto all the islands that are not one of those
 // Z   X   Y  X cannot connect to both Ys because it blocks the boat, so it MUST connect to Z
 //       b |
@@ -462,7 +600,7 @@ const noBlockedBoatsPigeonholeHeuristic = (advanced) => (level, island) => {
   );
   let found = false;
   const pairs = islandPairs(disconnectedIslands);
-  pairs.forEach(([aI1, aI2]) => {
+  forEach(pairs, ([aI1, aI2]) => {
     const levelClone = cloneDeep(level);
     const islandClone = levelClone.islands.find(
       (i) => i.x === island.x && i.y === island.y
@@ -540,6 +678,9 @@ const noBlockedBoatsPigeonholeHeuristic = (advanced) => (level, island) => {
           found = true;
         }
       }
+      if (found) {
+        return false;
+      }
     }
   });
   return found;
@@ -607,12 +748,13 @@ const heuristics = [
   pigeonholeHeuristic, // 6
   noStrandedIslandsAdvanced1Heuristic, // 7
   noStrandedIslandsAdvanced2Heuristic, // 8
-  unfillableIslandPigeonholeHeuristic(false), // 9
-  unfillableIslandPigeonholeHeuristic(true), // 10
-  noBlockedBoatsPigeonholeHeuristic(false), // 11
-  noBlockedBoatsPigeonholeHeuristic(true), // 12
-  guessAndCheck(false), // 13
-  guessAndCheck(true), // 14
+  onlyChoicesNoBlockedBoatsHeuristic, // 9
+  unfillableIslandPigeonholeHeuristic(false), // 10
+  unfillableIslandPigeonholeHeuristic(true), // 11
+  noBlockedBoatsPigeonholeHeuristic(false), // 12
+  noBlockedBoatsPigeonholeHeuristic(true), // 13
+  guessAndCheck(false), // 14
+  guessAndCheck(true), // 15
 ];
 
 const solve = (

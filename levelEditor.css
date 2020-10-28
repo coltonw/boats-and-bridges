@@ -3,6 +3,11 @@ body {
   padding: 0;
 }
 
+.container {
+  position: relative;
+  height: 1000px;
+}
+
 #level {
   position: absolute;
   left: 20px;

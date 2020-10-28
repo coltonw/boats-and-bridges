@@ -5,14 +5,16 @@
     <link rel="stylesheet" href="levelEditor.css" />
   </head>
   <body>
-    <div>
-      <button id="reset">Reset</button>
-      <button id="compress">Compress</button>
-      <button id="hideBridges">Hide Bridges</button>
+    <div class="container">
+      <div>
+        <button id="reset">Reset</button>
+        <button id="compress">Compress</button>
+        <button id="hideBridges">Hide Bridges</button>
+      </div>
+      <div id="info"></div>
+      <div id="level"></div>
+      <textarea id="yaml"></textarea>
     </div>
-    <div id="info"></div>
-    <div id="level"></div>
-    <textarea id="yaml"></textarea>
-    <script src="./dist/main.js" ></script>
+    <script src="./dist/main.js"></script>
   </body>
 </html>

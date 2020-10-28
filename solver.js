@@ -17,6 +17,7 @@ const {
   islandPairs,
   islandTriples,
   getAdjacentIslands,
+  getTotalConnectedBridges,
 } = require('./utils');
 
 /**
@@ -842,6 +843,38 @@ const noBlockedBoatsPigeonholeHeuristic = (advanced) => (
   return found;
 };
 
+const evenOrOddQuestion = (level, island, islandData) => {
+  if (island.b) {
+    return false;
+  }
+
+  const totalBridges = level.islands.reduce((sum, i) => {
+    if (i.b) {
+      return sum + i.b;
+    } else if (
+      getAdjacentIslands(level, i).length === 0 ||
+      (i.x === island.x && i.y === island.y)
+    ) {
+      return sum;
+    } else {
+      return -100000;
+    }
+  }, 0);
+  if (totalBridges < 0) {
+    return false;
+  }
+  const { adjacentIslands } = islandData;
+  const connectedBridgesCount = getTotalConnectedBridges(level, island);
+  if (
+    adjacentIslands.length === 1 &&
+    (totalBridges - connectedBridgesCount) % 2 === 1
+  ) {
+    addBridge(level, island, adjacentIslands[0]);
+    return true;
+  }
+  return false;
+};
+
 // TODO we could do some narrow guess heuristics.
 // They aren't great puzzle solving so I am deciding whether to bother.
 // Basically, if a a stranded island has two choices where to connect, you can guess and check one of those.
@@ -902,10 +935,10 @@ const heuristics = [
   noStrandedIslandsSimpleHeuristic, // 4 (swapped with 3)
   noBlockedBoatsHeuristic, // 5
   pigeonholeHeuristic, // 6
-  noStrandedIslandsAdvanced1Heuristic, // 7
-  noStrandedIslandsAdvanced2Heuristic, // 8
-  noPiratedBoatsHeuristic, // 9
-  noPiratedBoatsPreventBridgeHeuristic, // 10
+  noPiratedBoatsHeuristic, // 7
+  noPiratedBoatsPreventBridgeHeuristic, // 8
+  noStrandedIslandsAdvanced1Heuristic, // 9
+  noStrandedIslandsAdvanced2Heuristic, // 10
   onlyChoicesNoBlockedBoatsHeuristic, // 11
   noStrandedIslandsAdvanced3Heuristic(false), // 12
   noStrandedIslandsAdvanced3Heuristic(true), // 13
@@ -913,8 +946,9 @@ const heuristics = [
   unfillableIslandPigeonholeHeuristic(true), // 15
   noBlockedBoatsPigeonholeHeuristic(false), // 16
   noBlockedBoatsPigeonholeHeuristic(true), // 17
-  guessAndCheck(false), // 18
-  guessAndCheck(true), // 19
+  evenOrOddQuestion, // 18
+  guessAndCheck(false), // 19
+  guessAndCheck(true), // 20
 ];
 
 const getIslandData = (level, island, levelData, recalc) => {
@@ -990,12 +1024,32 @@ const solve = (
       throw new Error('Suspected infinite loop');
     }
   }
+  let complexity = 0;
+  solutionData.maxHeuristic = 0;
+  for (let i = 0; i < solutionData.heuristicsApplied.length; i++) {
+    complexity += Math.log2(solutionData.heuristicsApplied[i] + 2) - 1;
+    // I call this "thrashing" and I think more accurately represents complexity than just the index of the heuristic
+    if (
+      i > 0 &&
+      solutionData.heuristicsApplied[i] < solutionData.heuristicsApplied[i - 1]
+    ) {
+      complexity += Math.log2(solutionData.heuristicsApplied[i] + 2) - 1;
+    }
+
+    solutionData.maxHeuristic = Math.max(
+      solutionData.maxHeuristic,
+      solutionData.heuristicsApplied[i]
+    );
+  }
   solutionData.complexity =
-    solutionData.heuristicsApplied.reduce((s, n) => s + n, 0) /
-    solutionData.heuristicsApplied.length;
+    (complexity / solutionData.heuristicsApplied.length) * 30 +
+    solutionData.maxHeuristic * 2 +
+    level.islands.length / 2;
   quiet ||
     console.log(
-      `Solved (${solutionData.loops} loops; heuristics: ${solutionData.heuristicsApplied}, complexity: ${solutionData.complexity}):`
+      `Solved (${solutionData.loops} loops; heuristics: ${
+        solutionData.heuristicsApplied
+      }, complexity: ${solutionData.complexity.toFixed(0)}):`
     );
   quiet || print(level);
   if (!validated(level)) {

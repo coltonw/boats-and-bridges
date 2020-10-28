@@ -671,6 +671,22 @@ const getAdjacentIslands = (level, island) => {
   return adjacentIslands;
 };
 
+const getTotalConnectedBridges = (level, island) => {
+  let total = 0;
+  level.bridgesH.forEach(({ x0, x1, y, n }) => {
+    if ((island.x === x0 || island.x === x1) && island.y === y) {
+      total += n;
+    }
+  });
+  level.bridgesV.forEach(({ x, y0, y1, n }) => {
+    if (island.x === x && (island.y === y0 || island.y === y1)) {
+      total += n;
+    }
+  });
+
+  return total;
+};
+
 module.exports = {
   bridgesLeft,
   bridgeBetween,
@@ -691,4 +707,5 @@ module.exports = {
   islandPairs,
   islandTriples,
   getAdjacentIslands,
+  getTotalConnectedBridges,
 };

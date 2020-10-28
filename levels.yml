@@ -2430,53 +2430,91 @@ levels:
     pirates: []
   - name: Get Even
     islands:
-      - x: 1
+      - x: 0
         'y': 0
         b: 2
         'n': 0
-      - x: 2
+      - x: 1
         'y': 0
         b: 1
         'n': 0
-      - x: 1
+      - x: 0
         'y': 1
-        b: 3
-        'n': 0
-      - x: 3
-        'y': 1
-        b: 4
-        'n': 0
-      - x: 6
-        'y': 1
-        b: 3
-        'n': 0
-      - x: 1
-        'y': 2
         b: 3
         'n': 0
       - x: 2
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 1
         'y': 2
         b: 2
         'n': 0
-      - x: 3
+      - x: 2
         'y': 3
         b: null
         'n': 0
-      - x: 2
+      - x: 1
         'y': 4
+        b: 2
+        'n': 0
+      - x: 0
+        'y': 5
         b: 2
         'n': 0
       - x: 1
         'y': 5
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 5
+        b: 4
+        'n': 0
+    boats: []
+    bridgesH: []
+    bridgesV: []
+    pirates: []
+  - name: The Same but Different
+    islands:
+      - x: 0
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 0
+        b: null
+        'n': 0
+      - x: 0
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 1
+        b: 2
+        'n': 0
+      - x: 0
+        'y': 2
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 2
         b: 2
         'n': 0
       - x: 2
-        'y': 5
-        b: 4
+        'y': 2
+        b: 5
         'n': 0
-      - x: 6
-        'y': 5
-        b: 4
+      - x: 2
+        'y': 3
+        b: null
         'n': 0
     boats: []
     bridgesH: []

@@ -127,11 +127,11 @@ const onlyChoiceHeuristic = (level, island) => {
 };
 
 // the adjacent possible bridges fill all remaining bridges needed
-const onlyChoicesHeuristic = (level, island) => {
+const onlyChoicesHeuristic = (level, island, islandData) => {
   if (!island.b) {
     return false;
   }
-  const adjacentIslands = getAdjacentIslands(level, island);
+  const { adjacentIslands } = islandData;
   const bridgeOptionsSum = adjacentIslands.reduce(
     (sum, aI) => sum + possibleConnections(level, island, aI),
     0
@@ -152,11 +152,11 @@ const onlyChoicesHeuristic = (level, island) => {
 
 // Right now this is simple.  It just adds max bridges.
 // it may be possible to generalize this but for now this just works for 2s next to each other and 1s next to each other
-const noStrandedIslandsSimpleHeuristic = (level, island) => {
+const noStrandedIslandsSimpleHeuristic = (level, island, islandData) => {
   if (!island.b || island.b > 2) {
     return false;
   }
-  const adjacentIslands = getAdjacentIslands(level, island);
+  const { adjacentIslands } = islandData;
   let found = false;
 
   adjacentIslands.forEach((adjacentIsland) => {
@@ -169,11 +169,11 @@ const noStrandedIslandsSimpleHeuristic = (level, island) => {
 };
 
 // if there are so many bridges required that you MUST have 1 point to each adjacent island
-const moreBridgesThanChoicesHeuristic = (level, island) => {
+const moreBridgesThanChoicesHeuristic = (level, island, islandData) => {
   if (!island.b) {
     return false;
   }
-  const adjacentIslands = getAdjacentIslands(level, island);
+  const { adjacentIslands } = islandData;
 
   const notConnected = adjacentIslands.filter(
     (aI) => !bridgeBetween(level, island, aI)
@@ -192,11 +192,11 @@ const moreBridgesThanChoicesHeuristic = (level, island) => {
   return false;
 };
 
-const noBlockedBoatsHeuristic = (level, island) => {
+const noBlockedBoatsHeuristic = (level, island, islandData) => {
   if (!level.boats) {
     return false;
   }
-  const adjacentIslands = getAdjacentIslands(level, island);
+  const { adjacentIslands } = islandData;
   let found = false;
 
   adjacentIslands.forEach((adjacentIsland) => {
@@ -226,11 +226,11 @@ const noBlockedBoatsHeuristic = (level, island) => {
 
 // if you can only have a single bridge to some of the adjecent bridges it may mean you MUST put a bridge on other islands
 // this is a somewhat more complex moreBridgesThanChoicesHeuristic
-const pigeonholeHeuristic = (level, island) => {
+const pigeonholeHeuristic = (level, island, islandData) => {
   if (!island.b) {
     return;
   }
-  const adjacentIslands = getAdjacentIslands(level, island);
+  const { adjacentIslands } = islandData;
   const singleLinkOptions = adjacentIslands.reduce(
     (sum, aI) => sum + (possibleConnections(level, island, aI) === 1 ? 1 : 0),
     0
@@ -299,8 +299,8 @@ const noStrandedIslandsAdvanced1Heuristic = (level, island) => {
 //    X   X - B
 //    |       |
 //    B - B - B   Where A and B CANNOT connect via any other links
-const noStrandedIslandsAdvanced2Heuristic = (level, island) => {
-  const adjacentIslands = getAdjacentIslands(level, island);
+const noStrandedIslandsAdvanced2Heuristic = (level, island, islandData) => {
+  const { adjacentIslands } = islandData;
 
   let found = false;
   adjacentIslands.forEach((adjacentIsland) => {
@@ -335,13 +335,16 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island) => {
 //    A   X   B
 //
 //        B   Y  Putting remaining bridges at the Bs would cause Y to be unfillable, so you must connect to A
-const unfillableIslandPigeonholeHeuristic = (advanced) => (level, island) => {
+const unfillableIslandPigeonholeHeuristic = (advanced) => (
+  level,
+  island,
+  islandData,
+  levelData
+) => {
   if (!level.boats || !island.b) {
     return false;
   }
-  const adjacentIslands = getAdjacentIslands(level, island).filter(
-    (aI) => aI.b
-  );
+  const adjacentIslands = islandData.adjacentIslands.filter((aI) => aI.b);
   let found = false;
   const pairs = islandPairs(adjacentIslands, true);
   pairs.forEach(([aI1, aI2]) => {
@@ -354,7 +357,11 @@ const unfillableIslandPigeonholeHeuristic = (advanced) => (level, island) => {
       adjacent(level, aI1, farIsland) &&
       adjacent(level, aI2, farIsland)
     ) {
-      const otherIslands = getAdjacentIslands(level, farIsland).filter(
+      const otherIslands = getIslandData(
+        level,
+        farIsland,
+        levelData
+      ).adjacentIslands.filter(
         (oI) =>
           !(
             (oI.x === aI1.x && oI.y === aI1.y) ||
@@ -562,11 +569,11 @@ const noBlockedTriplesHelper = (level, island, disconnectedIslands) => {
 //     A     X     A
 //     |  b     d  |
 //     ? --- B ----?  X must connect to at least two islands so the we know it cannot connect to B or it will block in the dock or block in the boat
-const onlyChoicesNoBlockedBoatsHeuristic = (level, island) => {
+const onlyChoicesNoBlockedBoatsHeuristic = (level, island, islandData) => {
   if (!level.boats || !island.b) {
     return false;
   }
-  const adjacentIslands = getAdjacentIslands(level, island);
+  const { adjacentIslands } = islandData;
   const [connectedIslands, disconnectedIslands] = partition(
     adjacentIslands,
     (aI) => bridgeBetween(level, island, aI)
@@ -590,11 +597,15 @@ const onlyChoicesNoBlockedBoatsHeuristic = (level, island) => {
 // Z   X   Y  X cannot connect to both Ys because it blocks the boat, so it MUST connect to Z
 //       b |
 //     Y - ?
-const noBlockedBoatsPigeonholeHeuristic = (advanced) => (level, island) => {
+const noBlockedBoatsPigeonholeHeuristic = (advanced) => (
+  level,
+  island,
+  islandData
+) => {
   if (!level.boats || !island.b) {
     return false;
   }
-  const adjacentIslands = getAdjacentIslands(level, island);
+  const { adjacentIslands } = islandData;
   const disconnectedIslands = adjacentIslands.filter(
     (aI) => !bridgeBetween(level, island, aI)
   );
@@ -757,6 +768,17 @@ const heuristics = [
   guessAndCheck(true), // 15
 ];
 
+const getIslandData = (level, island, levelData, recalc) => {
+  if (!recalc && levelData[`${island.x}_${island.y}`]) {
+    return levelData[`${island.x}_${island.y}`];
+  } else {
+    const adjacentIslands = getAdjacentIslands(level, island);
+    const islandData = { adjacentIslands };
+    levelData[`${island.x}_${island.y}`] = islandData;
+    return islandData;
+  }
+};
+
 const solve = (
   level,
   quiet = false,
@@ -769,6 +791,7 @@ const solve = (
     loops: 0,
     heuristicsApplied: [],
   };
+  const levelData = {};
   while (!solved(level)) {
     solutionData.loops++;
     let somethingChanged = false;
@@ -777,9 +800,16 @@ const solve = (
     // Probably in the future we will need to have heuristics check more than just one island at a time, but for now this works
     for (let h = 0; h < heurLen; h++) {
       forEach(level.islands, (island) => {
+        let islandData = getIslandData(level, island, levelData, h === 0);
+        levelData[`${island.x}_${island.y}`] = islandData;
         if (!full(island)) {
           const clonedLevel = cloneDeep(level);
-          const heuristicWorked = heuristics[h](level, island);
+          const heuristicWorked = heuristics[h](
+            level,
+            island,
+            islandData,
+            levelData
+          );
           if (heuristicWorked) {
             // quiet || console.log(h);
             // quiet || print(level);

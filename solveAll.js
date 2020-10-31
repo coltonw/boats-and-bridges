@@ -33,7 +33,7 @@ levelsToInclude.forEach((level, i) => {
     }
 
     solve(cloneDeep(level), false, true);
-    // hasMultipleSolutions(cloneDeep(level));
+    args.length > 0 && hasMultipleSolutions(cloneDeep(level));
   } catch (e) {
     console.log(e);
   }

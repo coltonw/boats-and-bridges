@@ -3032,6 +3032,79 @@ testLevels:
         dock:
           x: 7
           'y': 5
+  - name: Keaton
+    islands:
+      - x: 0
+        'y': 0
+        b: 1
+        'n': 0
+      - x: 2
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 3
+        'y': 0
+        b: 1
+        'n': 0
+      - x: 5
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 8
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 0
+        'y': 3
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 5
+        'y': 3
+        b: 4
+        'n': 0
+      - x: 8
+        'y': 3
+        b: 4
+        'n': 0
+      - x: 0
+        'y': 6
+        b: 2
+        'n': 0
+      - x: 3
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 5
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 8
+        'y': 6
+        b: 3
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 7
+          'y': 5
+        dock:
+          x: 2
+          'y': 0
+      - boat:
+          x: 5
+          'y': 0
+        dock:
+          x: 0
+          'y': 3
 
 debugLevels:
   - name: crash

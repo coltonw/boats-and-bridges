@@ -32,7 +32,7 @@ levelsToInclude.forEach((level, i) => {
       console.log((args.length === 0 ? `Level ${i + 1}: ` : '') + level.name);
     }
 
-    solve(cloneDeep(level), false, true);
+    solve(cloneDeep(level), false, args.length === 0);
     args.length > 0 && hasMultipleSolutions(cloneDeep(level));
   } catch (e) {
     console.log(e);

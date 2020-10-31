@@ -390,26 +390,29 @@ const connectedWater = (level, water) => {
   return result;
 };
 
-const getConnectedWater = (level, startingWater) => {
-  const traversingStack = [startingWater];
-  const visited = [startingWater];
+const connectedByWater = (level, boat, dock) => {
+  const traversingStack = [boat];
+  const visited = [boat];
 
   while (traversingStack.length > 0) {
     const water = traversingStack.pop();
     const connected = connectedWater(level, water);
-    connected.forEach((cW) => {
+    let found = false;
+    forEach(connected, (cW) => {
       if (!visited.find((w) => w.x === cW.x && w.y === cW.y)) {
         visited.push(cW);
         traversingStack.unshift(cW);
+        if (dock.x === cW.x && dock.y === cW.y) {
+          found = true;
+          return false;
+        }
       }
     });
+    if (found) {
+      return true;
+    }
   }
-  return visited;
-};
-
-const connectedByWater = (level, boat, dock) => {
-  const connectedWater = getConnectedWater(level, boat);
-  return !!connectedWater.find((w) => w.x === dock.x && w.y === dock.y);
+  return false;
 };
 
 const clear = (level) => {
@@ -512,7 +515,6 @@ module.exports = {
   fullyConnected,
   clear,
   getPossiblyConnectedIslands,
-  getConnectedWater,
   connectedByWater,
   islandPairs,
   islandTriples,

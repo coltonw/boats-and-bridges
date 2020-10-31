@@ -18,6 +18,7 @@ if (args.length > 0) {
   levelsToInclude = [...levels, ...generated, ...testLevels];
 }
 
+const heuristicsUsed = {};
 levelsToInclude.forEach((level, i) => {
   try {
     if (
@@ -32,9 +33,34 @@ levelsToInclude.forEach((level, i) => {
       console.log((args.length === 0 ? `Level ${i + 1}: ` : '') + level.name);
     }
 
-    solve(cloneDeep(level), false, args.length === 0);
+    const { heuristicsApplied } = solve(
+      cloneDeep(level),
+      false,
+      args.length === 0
+    );
+    if (args.length === 0) {
+      const hAlready = {};
+      heuristicsApplied.forEach((h) => {
+        if (hAlready[h]) {
+          return;
+        }
+        heuristicsUsed[h] = heuristicsUsed[h] ? heuristicsUsed[h] + 1 : 1;
+        hAlready[h] = true;
+      });
+    }
     args.length > 0 && hasMultipleSolutions(cloneDeep(level));
   } catch (e) {
     console.log(e);
   }
 });
+
+if (Object.keys(heuristicsUsed).length > 0) {
+  let s = '';
+  Object.entries(heuristicsUsed).forEach(([h, numUses]) => {
+    s += `${h}: ${numUses}, `;
+  });
+
+  console.log('');
+  console.log('Levels containing the following heuristics:');
+  console.log(s);
+}

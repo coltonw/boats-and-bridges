@@ -215,6 +215,50 @@ const addBridge = (level, island0, island1, n = 1) => {
   island1.n += n;
 };
 
+const removeBridge = (level, island0, island1, n = 1) => {
+  if (island0.x === island1.x) {
+    const bridge = {
+      x: island0.x,
+      y0: Math.min(island0.y, island1.y),
+      y1: Math.max(island0.y, island1.y),
+    };
+    for (let i = 0; i < level.bridgesV.length; i++) {
+      if (
+        level.bridgesV[i].x === bridge.x &&
+        level.bridgesV[i].y0 === bridge.y0 &&
+        level.bridgesV[i].y1 === bridge.y1
+      ) {
+        level.bridgesV[i].n -= n;
+        if (level.bridgesV[i].n <= 0) {
+          level.bridgesV.splice(i, 1);
+        }
+        break;
+      }
+    }
+  } else {
+    const bridge = {
+      x0: Math.min(island0.x, island1.x),
+      x1: Math.max(island0.x, island1.x),
+      y: island0.y,
+    };
+    for (let i = 0; i < level.bridgesH.length; i++) {
+      if (
+        level.bridgesH[i].x0 === bridge.x0 &&
+        level.bridgesH[i].x1 === bridge.x1 &&
+        level.bridgesH[i].y === bridge.y
+      ) {
+        level.bridgesH[i].n -= n;
+        if (level.bridgesH[i].n <= 0) {
+          level.bridgesH.splice(i, 1);
+        }
+        break;
+      }
+    }
+  }
+  island0.n -= n;
+  island1.n -= n;
+};
+
 const connectedIslands = (level, island) => {
   const result = [];
   level.bridgesH.forEach((bridgeH) => {
@@ -463,6 +507,7 @@ module.exports = {
   adjacent,
   full,
   addBridge,
+  removeBridge,
   getConnectedIslands,
   fullyConnected,
   clear,

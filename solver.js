@@ -8,6 +8,7 @@ const {
   adjacent,
   full,
   addBridge,
+  removeBridge,
   fullyConnected,
   getPossiblyConnectedIslands,
   connectedByWater,
@@ -190,17 +191,10 @@ const noBlockedBoatsHeuristic = (level, island, islandData) => {
   let found = false;
 
   adjacentIslands.forEach((adjacentIsland) => {
-    const levelClone = cloneDeep(level);
-    const islandClone = levelClone.islands.find(
-      (i) => i.x === island.x && i.y === island.y
-    );
-    const adjacentClone = levelClone.islands.find(
-      (i) => i.x === adjacentIsland.x && i.y === adjacentIsland.y
-    );
-    addBridge(levelClone, islandClone, adjacentClone);
+    addBridge(level, island, adjacentIsland);
     let strandedBoat = false;
     forEach(level.boats, ({ boat, dock }) => {
-      const connected = connectedByWater(levelClone, boat, dock);
+      const connected = connectedByWater(level, boat, dock);
       if (!connected) {
         strandedBoat = true;
         return false;
@@ -210,6 +204,7 @@ const noBlockedBoatsHeuristic = (level, island, islandData) => {
       const changed = addMaxBridge(level, island, adjacentIsland, 0);
       found = found || changed;
     }
+    removeBridge(level, island, adjacentIsland);
   });
   return found;
 };
@@ -294,29 +289,16 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island, islandData) => {
 
   let found = false;
   adjacentIslands.forEach((adjacentIsland) => {
-    const levelClone = cloneDeep(level);
-    const islandClone = levelClone.islands.find(
-      (i) => i.x === island.x && i.y === island.y
-    );
-    const adjacentClone = levelClone.islands.find(
-      (i) => i.x === adjacentIsland.x && i.y === adjacentIsland.y
-    );
-    addBridge(levelClone, islandClone, adjacentClone);
-    const connectedIslands = getPossiblyConnectedIslands(
-      levelClone,
-      islandClone
-    );
+    const maxAmount = bridgeBetween(level, island, adjacentIsland)
+      ? 1
+      : possibleConnections(level, island, adjacentIsland) - 1;
+    addBridge(level, island, adjacentIsland);
+    const connectedIslands = getPossiblyConnectedIslands(level, island);
     if (connectedIslands.length < level.islands.length) {
-      const changed = addMaxBridge(
-        level,
-        island,
-        adjacentIsland,
-        bridgeBetween(level, island, adjacentIsland)
-          ? 1
-          : possibleConnections(level, island, adjacentIsland) - 1
-      );
+      const changed = addMaxBridge(level, island, adjacentIsland, maxAmount);
       found = found || changed;
     }
+    removeBridge(level, island, adjacentIsland);
   });
   return found;
 };
@@ -451,26 +433,18 @@ const noBlockedPairsHelper = (level, island, disconnectedIslands) => {
   const pairs = islandPairs(disconnectedIslands);
   let twoUnblockingPairs = false;
   forEach(pairs, ([aI1, aI2]) => {
-    const levelClone = cloneDeep(level);
-    const islandClone = levelClone.islands.find(
-      (i) => i.x === island.x && i.y === island.y
-    );
-    const aI1Clone = levelClone.islands.find(
-      (i) => i.x === aI1.x && i.y === aI1.y
-    );
-    addBridge(levelClone, islandClone, aI1Clone);
-    const aI2Clone = levelClone.islands.find(
-      (i) => i.x === aI2.x && i.y === aI2.y
-    );
-    addBridge(levelClone, islandClone, aI2Clone);
+    addBridge(level, island, aI1);
+    addBridge(level, island, aI2);
     let strandedBoat = false;
     forEach(level.boats, ({ boat, dock }) => {
-      const connected = connectedByWater(levelClone, boat, dock);
+      const connected = connectedByWater(level, boat, dock);
       if (!connected) {
         strandedBoat = true;
         return false;
       }
     });
+    removeBridge(level, island, aI1);
+    removeBridge(level, island, aI2);
     if (!strandedBoat) {
       if (!unblockingPair) {
         unblockingPair = [aI1, aI2];
@@ -503,30 +477,20 @@ const noBlockedTriplesHelper = (level, island, disconnectedIslands) => {
   const triples = islandTriples(disconnectedIslands);
   let twoUnblockingTriples = false;
   forEach(triples, ([aI1, aI2, aI3]) => {
-    const levelClone = cloneDeep(level);
-    const islandClone = levelClone.islands.find(
-      (i) => i.x === island.x && i.y === island.y
-    );
-    const aI1Clone = levelClone.islands.find(
-      (i) => i.x === aI1.x && i.y === aI1.y
-    );
-    addBridge(levelClone, islandClone, aI1Clone);
-    const aI2Clone = levelClone.islands.find(
-      (i) => i.x === aI2.x && i.y === aI2.y
-    );
-    addBridge(levelClone, islandClone, aI2Clone);
-    const aI3Clone = levelClone.islands.find(
-      (i) => i.x === aI3.x && i.y === aI3.y
-    );
-    addBridge(levelClone, islandClone, aI3Clone);
+    addBridge(level, island, aI1);
+    addBridge(level, island, aI2);
+    addBridge(level, island, aI3);
     let strandedBoat = false;
     forEach(level.boats, ({ boat, dock }) => {
-      const connected = connectedByWater(levelClone, boat, dock);
+      const connected = connectedByWater(level, boat, dock);
       if (!connected) {
         strandedBoat = true;
         return false;
       }
     });
+    removeBridge(level, island, aI1);
+    removeBridge(level, island, aI2);
+    removeBridge(level, island, aI3);
     if (!strandedBoat) {
       if (!unblockingTriple) {
         unblockingTriple = [aI1, aI2, aI3];
@@ -602,26 +566,18 @@ const noBlockedBoatsPigeonholeHeuristic = (advanced) => (
   let found = false;
   const pairs = islandPairs(disconnectedIslands);
   forEach(pairs, ([aI1, aI2]) => {
-    const levelClone = cloneDeep(level);
-    const islandClone = levelClone.islands.find(
-      (i) => i.x === island.x && i.y === island.y
-    );
-    const aI1Clone = levelClone.islands.find(
-      (i) => i.x === aI1.x && i.y === aI1.y
-    );
-    addBridge(levelClone, islandClone, aI1Clone);
-    const aI2Clone = levelClone.islands.find(
-      (i) => i.x === aI2.x && i.y === aI2.y
-    );
-    addBridge(levelClone, islandClone, aI2Clone);
+    addBridge(level, island, aI1);
+    addBridge(level, island, aI2);
     let strandedBoat = false;
     forEach(level.boats, ({ boat, dock }) => {
-      const connected = connectedByWater(levelClone, boat, dock);
+      const connected = connectedByWater(level, boat, dock);
       if (!connected) {
         strandedBoat = true;
         return false;
       }
     });
+    removeBridge(level, island, aI1);
+    removeBridge(level, island, aI2);
     if (strandedBoat) {
       // there are three situations here
       // 1. bridgesLeft - (max bridges to one blocking island) is equal to all bridges in the non-blocking islands, so we just fill them up

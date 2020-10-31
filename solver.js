@@ -100,30 +100,20 @@ const onlyChoiceSimpleHeuristic = (level, island) => {
 };
 
 // if there is only one island that can connect, connect to that island
-const onlyChoiceHeuristic = (level, island) => {
+const onlyChoiceHeuristic = (level, island, islandData) => {
   if (!island.b) {
     return false;
   }
-  let adjacentIsland = null;
-  for (let i = 0; i < level.islands.length; i++) {
-    if (
-      adjacent(level, island, level.islands[i]) &&
-      possibleConnections(level, island, level.islands[i]) > 0
-    ) {
-      // more than one, so return
-      if (adjacentIsland) return false;
+  const { adjacentIslands } = islandData;
 
-      adjacentIsland = level.islands[i];
-    }
-  }
-
-  if (adjacentIsland) {
-    const n = Math.min(bridgesLeft(island), bridgesLeft(adjacentIsland), 2);
-    addBridge(level, island, adjacentIsland, n);
+  if (adjacentIslands.length === 1) {
+    const n = Math.min(bridgesLeft(island), bridgesLeft(adjacentIslands[0]), 2);
+    addBridge(level, island, adjacentIslands[0], n);
     return true;
-  } else {
+  } else if (adjacentIslands.length === 0) {
     throw new Error('Unsolvable. Island with no adjacent islands.');
   }
+  return false;
 };
 
 // the adjacent possible bridges fill all remaining bridges needed
@@ -797,13 +787,13 @@ const solve = (
     let somethingChanged = false;
     const heurLen =
       heuristics.length - (noGuessing ? 2 : noNestedGuessing ? 1 : 0);
+    const clonedLevel = cloneDeep(level);
     // Probably in the future we will need to have heuristics check more than just one island at a time, but for now this works
     for (let h = 0; h < heurLen; h++) {
       forEach(level.islands, (island) => {
         let islandData = getIslandData(level, island, levelData, h === 0);
         levelData[`${island.x}_${island.y}`] = islandData;
         if (!full(island)) {
-          const clonedLevel = cloneDeep(level);
           const heuristicWorked = heuristics[h](
             level,
             island,

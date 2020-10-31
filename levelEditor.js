@@ -1,6 +1,7 @@
 import solver from './solver.js';
 import { clear } from './utils';
 import yaml from 'js-yaml';
+import { debounce } from 'lodash';
 
 const levelElement = document.getElementById('level');
 
@@ -23,6 +24,7 @@ let showBridges = true;
 let timeouts = [];
 
 const save = () => {
+  renderLevel();
   clear(level);
   generateYaml();
   localStorage.setItem('inProgressLevel', JSON.stringify(level));
@@ -50,7 +52,7 @@ const loadYaml = () => {
   }
 };
 
-const run = (quiet = false) => {
+const solveAndRender = (quiet = false) => {
   clear(level);
   let solution = null;
   try {
@@ -73,7 +75,7 @@ const run = (quiet = false) => {
         );
         if (multipleSolutions) {
           renderLevel();
-          timeouts.push(setTimeout(() => run(true), 2000));
+          timeouts.push(setTimeout(() => run(true), 1200));
         } else if (
           solution.heuristicsApplied.indexOf(solver.heuristics.length - 2) >
             -1 ||
@@ -84,13 +86,21 @@ const run = (quiet = false) => {
             solver(level, true, true);
           } catch (e) {}
           renderLevel();
-          timeouts.push(setTimeout(() => run(true), 2000));
+          timeouts.push(setTimeout(() => run(true), 1200));
         }
       }, 2000)
     );
   }
 
   renderLevel();
+};
+
+const solveAndRenderDebounced = debounce(solveAndRender, 800);
+
+const run = (quiet = false) => {
+  timeouts.forEach((t) => clearTimeout(t));
+  timeouts = [];
+  solveAndRenderDebounced(quiet);
 };
 
 const boatColors = [

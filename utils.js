@@ -426,7 +426,7 @@ const connectedWater = (level, water) => {
 };
 
 const connectedByWater = (level, boat, dock) => {
-  if (dock.x === boat.x && dock.y === boat.y) {
+  if (!boat || !dock || (dock.x === boat.x && dock.y === boat.y)) {
     return true;
   }
   const traversingStack = [boat];
@@ -509,7 +509,9 @@ const mustConnectWater = (level, water, bridgesToExclude) => {
     for (let j = i + 1; j < level.islands.length; j++) {
       if (
         vertAdjacent(level, level.islands[i], level.islands[j]) &&
-        possibleConnections(level, level.islands[i], level.islands[j]) > 0
+        possibleConnections(level, level.islands[i], level.islands[j]) > 0 &&
+        level.islands[i].b !== 1 &&
+        level.islands[j].b !== 1
       ) {
         checkBridgeV({
           x: level.islands[i].x,
@@ -518,7 +520,9 @@ const mustConnectWater = (level, water, bridgesToExclude) => {
         });
       } else if (
         horAdjacent(level, level.islands[i], level.islands[j]) &&
-        possibleConnections(level, level.islands[i], level.islands[j]) > 0
+        possibleConnections(level, level.islands[i], level.islands[j]) > 0 &&
+        level.islands[i].b !== 1 &&
+        level.islands[j].b !== 1
       ) {
         checkBridgeH({
           x0: Math.min(level.islands[i].x, level.islands[j].x),

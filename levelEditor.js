@@ -454,7 +454,7 @@ compressEl.onclick = (ev) => {
     ([mx, my], { x, y }) => [Math.max(mx, x), Math.max(my, y)],
     [0, 0]
   );
-  const [xMax, yMax] = level.boats.reduce(
+  const [xMaxB, yMaxB] = level.boats.reduce(
     ([mx, my], { boat, dock }) => {
       const xMaxChoices = [mx];
       const yMaxChoices = [my];
@@ -469,6 +469,10 @@ compressEl.onclick = (ev) => {
       return [Math.max(...xMaxChoices), Math.max(...yMaxChoices)];
     },
     [xMaxIsl, yMaxIsl]
+  );
+  const [xMax, yMax] = level.pirates.reduce(
+    ([mx, my], { x, y }) => [Math.max(mx, x), Math.max(my, y)],
+    [xMaxB, yMaxB]
   );
 
   let compress = 0;
@@ -488,8 +492,6 @@ compressEl.onclick = (ev) => {
     yCompress.push(compress);
   }
 
-  console.log(xCompress, yCompress);
-
   level.islands.forEach((island) => {
     island.x = island.x - xCompress[island.x];
     island.y = island.y - yCompress[island.y];
@@ -504,6 +506,11 @@ compressEl.onclick = (ev) => {
       dock.x = dock.x - xCompress[dock.x];
       dock.y = dock.y - yCompress[dock.y];
     }
+  });
+
+  level.pirates.forEach((pirate) => {
+    pirate.x = pirate.x - xCompress[pirate.x];
+    pirate.y = pirate.y - yCompress[pirate.y];
   });
   save();
   run();

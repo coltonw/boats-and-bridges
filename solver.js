@@ -352,7 +352,6 @@ const noPiratedBoatsHeuristic = (level, island, islandData) => {
       addBridge(level, island, adjacentIsland);
       found = true;
     }
-    console.log('');
   });
   return found;
 };

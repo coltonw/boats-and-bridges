@@ -88,6 +88,30 @@ button:first-of-type {
   );
 }
 
+.top-sail {
+  position: absolute;
+  width: 14px;
+  height: 9px;
+  margin: 16px 0 0 22px;
+  background-color: white;
+}
+
+.bottom-sail {
+  position: absolute;
+  width: 22px;
+  height: 12px;
+  margin: 27px 0 0 17px;
+  background-color: white;
+}
+
+.pirate-flag {
+  position: absolute;
+  width: 12px;
+  height: 8px;
+  margin: 6px 0 0 28px;
+  background-color: black;
+}
+
 .boat {
   position: absolute;
   width: 25px;

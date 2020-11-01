@@ -14,10 +14,14 @@ try {
 
 const level = storedLevel || {
   islands: [],
-  boats: [],
   bridgesH: [],
   bridgesV: [],
+  boats: [],
+  pirates: [],
 };
+
+// Temporary
+level.pirates = level.pirates || [];
 
 let showBridges = true;
 
@@ -45,8 +49,9 @@ const loadYaml = () => {
   const yamlStr = yamlEl.value;
   try {
     const levelYaml = yaml.load(yamlStr);
-    level.islands = levelYaml.islands;
-    level.boats = levelYaml.boats;
+    level.islands = levelYaml.islands || [];
+    level.boats = levelYaml.boats || [];
+    level.pirates = levelYaml.pirates || [];
   } catch (e) {
     console.log(e);
   }
@@ -213,6 +218,52 @@ const renderLevel = () => {
       levelElement.appendChild(dockEl);
     }
   });
+
+  level.pirates.forEach((pirate) => {
+    const sailEl = document.createElement('div');
+    sailEl.setAttribute('class', 'bottom-sail');
+    sailEl.setAttribute(
+      'style',
+      `left: ${(levelElement.offsetWidth / scale) * (pirate.x + 0.5)}px; top: ${
+        (levelElement.offsetHeight / scale) * (pirate.y + 0.5)
+      }px;`
+    );
+
+    levelElement.appendChild(sailEl);
+
+    const jibEl = document.createElement('div');
+    jibEl.setAttribute('class', 'top-sail');
+    jibEl.setAttribute(
+      'style',
+      `left: ${(levelElement.offsetWidth / scale) * (pirate.x + 0.5)}px; top: ${
+        (levelElement.offsetHeight / scale) * (pirate.y + 0.5)
+      }px;`
+    );
+
+    levelElement.appendChild(jibEl);
+
+    const flagEl = document.createElement('div');
+    flagEl.setAttribute('class', 'pirate-flag');
+    flagEl.setAttribute(
+      'style',
+      `left: ${(levelElement.offsetWidth / scale) * (pirate.x + 0.5)}px; top: ${
+        (levelElement.offsetHeight / scale) * (pirate.y + 0.5)
+      }px;`
+    );
+
+    levelElement.appendChild(flagEl);
+
+    const boatEl = document.createElement('div');
+    boatEl.setAttribute('class', 'boat');
+    boatEl.setAttribute(
+      'style',
+      `left: ${(levelElement.offsetWidth / scale) * (pirate.x + 0.5)}px; top: ${
+        (levelElement.offsetHeight / scale) * (pirate.y + 0.5)
+      }px; background-color: #855e42;`
+    );
+
+    levelElement.appendChild(boatEl);
+  });
 };
 
 const deleteIsland = ({ x, y }) => {
@@ -236,21 +287,33 @@ levelElement.onclick = (ev) => {
   const xScaled = (offsetX / levelElement.offsetWidth) * scale;
   const yScaled = (offsetY / levelElement.offsetHeight) * scale;
   if (
-    Math.abs(0.5 - (xScaled % 1)) > 0.3 &&
-    Math.abs(0.5 - (yScaled % 1)) > 0.3
+    Math.abs(0.5 - (xScaled % 1)) > 0.25 &&
+    Math.abs(0.5 - (yScaled % 1)) > 0.25
   ) {
     // boat
     const x = Math.floor(xScaled - 0.5);
     const y = Math.floor(yScaled - 0.5);
-    const boatInProgress = level.boats.find(({ boat, dock }) => !boat || !dock);
-    if (boatInProgress) {
-      if (!boatInProgress.boat) {
-        boatInProgress.boat = { x, y };
-      } else {
-        boatInProgress.dock = { x, y };
+    let pirateDeleted = false;
+    for (let i = 0; i < level.pirates.length; i++) {
+      if (level.pirates[i].x === x && level.pirates[i].y === y) {
+        level.pirates.splice(i, 1);
+        pirateDeleted = true;
+        break;
       }
-    } else {
-      level.boats.push({ boat: { x, y }, dock: null });
+    }
+    if (!pirateDeleted) {
+      const boatInProgress = level.boats.find(
+        ({ boat, dock }) => !boat || !dock
+      );
+      if (boatInProgress) {
+        if (!boatInProgress.boat) {
+          boatInProgress.boat = { x, y };
+        } else {
+          boatInProgress.dock = { x, y };
+        }
+      } else {
+        level.boats.push({ boat: { x, y }, dock: null });
+      }
     }
   } else {
     // island
@@ -290,8 +353,8 @@ levelElement.onauxclick = function (ev) {
   const xScaled = (offsetX / levelElement.offsetWidth) * scale;
   const yScaled = (offsetY / levelElement.offsetHeight) * scale;
   if (
-    Math.abs(0.5 - (xScaled % 1)) > 0.3 &&
-    Math.abs(0.5 - (yScaled % 1)) > 0.3
+    Math.abs(0.5 - (xScaled % 1)) > 0.25 &&
+    Math.abs(0.5 - (yScaled % 1)) > 0.25
   ) {
     // boat
     const x = Math.floor(xScaled - 0.5);
@@ -302,13 +365,16 @@ levelElement.onauxclick = function (ev) {
     const boatToDelete = level.boats.find(
       ({ boat }) => boat && boat.x === x && boat.y === y
     );
+    let boatDeleted = false;
     if (dockToDelete) {
+      boatDeleted = true;
       if (!dockToDelete.boat) {
         dockToDelete.delete = true;
       } else {
         dockToDelete.dock = null;
       }
     } else if (boatToDelete) {
+      boatDeleted = true;
       if (!boatToDelete.dock) {
         boatToDelete.delete = true;
       } else {
@@ -320,6 +386,12 @@ levelElement.onauxclick = function (ev) {
         level.boats.splice(i, 1);
         break;
       }
+    }
+    if (
+      !boatDeleted &&
+      !level.pirates.find((pirate) => pirate.x === x && pirate.y === y)
+    ) {
+      level.pirates.push({ x, y });
     }
   } else {
     // island
@@ -355,6 +427,7 @@ const resetButtonEl = document.getElementById('reset');
 resetButtonEl.onclick = (ev) => {
   level.islands = [];
   level.boats = [];
+  level.pirates = [];
   save();
   run();
 };

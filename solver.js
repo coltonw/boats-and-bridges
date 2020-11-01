@@ -304,6 +304,9 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island, islandData) => {
   return found;
 };
 
+// X   Y   There must be a bridge between X and Y to prevent the pirate
+// | b | p
+// A - A
 const noPiratedBoatsHeuristic = (level, island, islandData) => {
   if (!level.boats || !level.pirates) {
     return false;
@@ -351,6 +354,47 @@ const noPiratedBoatsHeuristic = (level, island, islandData) => {
     if (piratePrevented) {
       addBridge(level, island, adjacentIsland);
       found = true;
+    }
+  });
+  return found;
+};
+
+// X   A   The bridge between X and Y makes it impossible to block the pirate, so you must add a max bridge
+// |   | p
+// Y   A
+// | b |
+// B - B
+const noPiratedBoatsPreventBridgeHeuristic = (level, island, islandData) => {
+  if (!level.boats || !level.pirates) {
+    return false;
+  }
+  const { adjacentIslands } = islandData;
+  let found = false;
+
+  adjacentIslands.forEach((adjacentIsland) => {
+    addBridge(level, island, adjacentIsland);
+    let piratedBoat = false;
+    forEach(level.pirates, (pirate) => {
+      const piratedWaters = getMustConnectWater(level, pirate, []);
+      forEach(level.boats, ({ boat }) => {
+        if (piratedWaters.find(({ x, y }) => boat.x === x && boat.y === y)) {
+          piratedBoat = true;
+          return false;
+        }
+      });
+      if (piratedBoat) {
+        return false;
+      }
+    });
+    removeBridge(level, island, adjacentIsland);
+    if (piratedBoat) {
+      const changed = addMaxBridge(
+        level,
+        island,
+        adjacentIsland,
+        bridgeBetween(level, island, adjacentIsland) ? 1 : 0
+      );
+      found = found || changed;
     }
   });
   return found;
@@ -861,15 +905,16 @@ const heuristics = [
   noStrandedIslandsAdvanced1Heuristic, // 7
   noStrandedIslandsAdvanced2Heuristic, // 8
   noPiratedBoatsHeuristic, // 9
-  onlyChoicesNoBlockedBoatsHeuristic, // 10
-  noStrandedIslandsAdvanced3Heuristic(false), // 11
-  noStrandedIslandsAdvanced3Heuristic(true), // 12
-  unfillableIslandPigeonholeHeuristic(false), // 13
-  unfillableIslandPigeonholeHeuristic(true), // 14
-  noBlockedBoatsPigeonholeHeuristic(false), // 15
-  noBlockedBoatsPigeonholeHeuristic(true), // 16
-  guessAndCheck(false), // 17
-  guessAndCheck(true), // 18
+  noPiratedBoatsPreventBridgeHeuristic, // 10
+  onlyChoicesNoBlockedBoatsHeuristic, // 11
+  noStrandedIslandsAdvanced3Heuristic(false), // 12
+  noStrandedIslandsAdvanced3Heuristic(true), // 13
+  unfillableIslandPigeonholeHeuristic(false), // 14
+  unfillableIslandPigeonholeHeuristic(true), // 15
+  noBlockedBoatsPigeonholeHeuristic(false), // 16
+  noBlockedBoatsPigeonholeHeuristic(true), // 17
+  guessAndCheck(false), // 18
+  guessAndCheck(true), // 19
 ];
 
 const getIslandData = (level, island, levelData, recalc) => {

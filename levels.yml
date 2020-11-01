@@ -1588,6 +1588,52 @@ levels:
     bridgesH: []
     bridgesV: []
     boats: []
+  - name: Pirates Ho
+    islands:
+      - x: 0
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 0
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 1
+        b: 2
+        'n': 0
+      - x: 0
+        'y': 2
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 2
+        b: 2
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 0
+          'y': 1
+        dock:
+          x: 0
+          'y': 0
+    pirates:
+      - x: 1
+        'y': 1
   - name: The Chase
     islands:
       - x: 2
@@ -1658,6 +1704,128 @@ levels:
     pirates:
       - x: 2
         'y': 3
+  - name: Pirates Love Ones
+    islands:
+      - x: 0
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 7
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 8
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 1
+        b: 1
+        'n': 0
+      - x: 7
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 5
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 6
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 4
+        'y': 3
+        b: 2
+        'n': 0
+      - x: 5
+        'y': 3
+        b: 2
+        'n': 0
+      - x: 6
+        'y': 3
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 4
+        b: 1
+        'n': 0
+      - x: 3
+        'y': 4
+        b: 1
+        'n': 0
+      - x: 6
+        'y': 4
+        b: 1
+        'n': 0
+      - x: 7
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 7
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 6
+        b: 2
+        'n': 0
+      - x: 7
+        'y': 6
+        b: 1
+        'n': 0
+      - x: 8
+        'y': 6
+        b: 2
+        'n': 0
+      - x: 0
+        'y': 7
+        b: 1
+        'n': 0
+      - x: 1
+        'y': 7
+        b: 1
+        'n': 0
+      - x: 8
+        'y': 7
+        b: 2
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 5
+          'y': 2
+        dock:
+          x: 4
+          'y': 2
+    pirates:
+      - x: 0
+        'y': 7
   - name: Triple Boat Tango
     islands:
       - x: 0
@@ -3286,109 +3454,140 @@ testLevels:
         dock:
           x: 7
           'y': 5
-  - name: Keaton
+  - name: pirate almost matters
     islands:
       - x: 0
         'y': 0
-        b: 1
+        b: 2
         'n': 0
       - x: 2
         'y': 0
+        b: 3
+        'n': 0
+      - x: 7
+        'y': 0
+        b: null
+        'n': 0
+      - x: 10
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 11
+        'y': 0
         b: 2
         'n': 0
-      - x: 3
-        'y': 0
+      - x: 1
+        'y': 1
         b: 1
         'n': 0
-      - x: 5
-        'y': 0
-        b: 4
+      - x: 10
+        'y': 1
+        b: 3
         'n': 0
-      - x: 8
-        'y': 0
-        b: 2
+      - x: 3
+        'y': 3
+        b: 3
         'n': 0
-      - x: 0
+      - x: 4
         'y': 3
         b: 4
+        'n': 0
+      - x: 5
+        'y': 3
+        b: 5
+        'n': 0
+      - x: 6
+        'y': 3
+        b: 5
+        'n': 0
+      - x: 9
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 6
+        'y': 5
+        b: 2
+        'n': 0
+      - x: 5
+        'y': 6
+        b: 2
+        'n': 0
+      - x: 7
+        'y': 6
+        b: 2
+        'n': 0
+      - x: 9
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 7
+        b: 1
+        'n': 0
+      - x: 9
+        'y': 7
+        b: 1
+        'n': 0
+      - x: 1
+        'y': 8
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 8
+        b: 4
+        'n': 0
+      - x: 6
+        'y': 8
+        b: 3
+        'n': 0
+      - x: 10
+        'y': 8
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 9
+        b: 2
+        'n': 0
+      - x: 10
+        'y': 9
+        b: 1
         'n': 0
       - x: 2
-        'y': 3
-        b: 3
-        'n': 0
-      - x: 3
-        'y': 3
-        b: 3
-        'n': 0
-      - x: 5
-        'y': 3
-        b: 4
-        'n': 0
-      - x: 8
-        'y': 3
-        b: 4
-        'n': 0
-      - x: 0
-        'y': 6
+        'y': 10
         b: 2
         'n': 0
-      - x: 3
-        'y': 6
-        b: 4
+      - x: 11
+        'y': 10
+        b: null
         'n': 0
-      - x: 5
-        'y': 6
-        b: 3
+      - x: 0
+        'y': 13
+        b: 1
         'n': 0
-      - x: 8
-        'y': 6
-        b: 3
+      - x: 1
+        'y': 13
+        b: 1
+        'n': 0
+      - x: 9
+        'y': 13
+        b: 2
+        'n': 0
+      - x: 11
+        'y': 13
+        b: 2
         'n': 0
     bridgesH: []
     bridgesV: []
     boats:
       - boat:
-          x: 7
+          x: 8
           'y': 5
         dock:
-          x: 2
-          'y': 0
-      - boat:
           x: 5
-          'y': 0
-        dock:
-          x: 0
           'y': 3
-  - name: pirate
-    islands:
-      - x: 0
-        y: 0
-        b: 3
-        n: 0
-      - x: 1
-        y: 0
-        b: 2
-        n: 0
-      - x: 0
-        y: 1
-        b: 3
-        n: 0
-      - x: 1
-        y: 1
-        b: 2
-        n: 0
-    bridgesH: []
-    bridgesV: []
-    boats:
-      - boat:
-          x: 0
-          y: 0
-        dock:
-          x: 0
-          y: 0
     pirates:
-      - x: 1
-        y: 0
+      - x: 0
+        'y': 13
 
 debugLevels:
   - name: crash

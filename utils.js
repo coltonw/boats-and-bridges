@@ -326,6 +326,41 @@ const fullyConnected = (level) => {
   return connectedIslands.length === level.islands.length;
 };
 
+const allBoatsDocked = (level) => {
+  if (level.boats) {
+    let blockedBoat = false;
+    forEach(level.boats, ({ boat, dock }) => {
+      if (!connectedByWater(level, boat, dock)) {
+        blockedBoat = true;
+        return false;
+      }
+    });
+    return !blockedBoat;
+  }
+  return true;
+};
+
+const noBoatPirated = (level) => {
+  if (level.boats && level.pirates) {
+    let piratedBoat = false;
+    forEach(level.pirates, (pirate) => {
+      const piratedWaters = getMustConnectWater(level, pirate, []);
+      forEach(level.boats, ({ boat }) => {
+        if (piratedWaters.find((w) => w.x === boat.x && w.y === boat.y)) {
+          piratedBoat = true;
+          return false;
+        }
+      });
+    });
+    return !piratedBoat;
+  }
+  return true;
+};
+
+const validated = (level) => {
+  return fullyConnected(level) && allBoatsDocked(level) && noBoatPirated(level);
+};
+
 // water coordinates are to the bottom right of island coordinates
 // e.g. water 0 0 will be in between island 0 0 and island 1 1
 const connectedWater = (level, water) => {
@@ -391,6 +426,9 @@ const connectedWater = (level, water) => {
 };
 
 const connectedByWater = (level, boat, dock) => {
+  if (dock.x === boat.x && dock.y === boat.y) {
+    return true;
+  }
   const traversingStack = [boat];
   const visited = [boat];
 
@@ -413,6 +451,134 @@ const connectedByWater = (level, boat, dock) => {
     }
   }
   return false;
+};
+
+// water coordinates are to the bottom right of island coordinates
+// e.g. water 0 0 will be in between island 0 0 and island 1 1
+const mustConnectWater = (level, water, bridgesToExclude) => {
+  const result = [];
+  let up = true;
+  let down = true;
+  let left = true;
+  let right = true;
+  const checkBridgeH = (bridgeH) => {
+    if (
+      bridgesToExclude.find(
+        (b) =>
+          typeof b.x0 === 'number' &&
+          bridgeH.x0 === b.x0 &&
+          bridgeH.x1 === b.x1 &&
+          bridgeH.y === b.y
+      )
+    ) {
+      return;
+    }
+    if (bridgeH.x0 <= water.x && bridgeH.x1 > water.x) {
+      if (bridgeH.y === water.y) {
+        up = false;
+      }
+      if (bridgeH.y === water.y + 1) {
+        down = false;
+      }
+    }
+  };
+  level.bridgesH.forEach(checkBridgeH);
+  const checkBridgeV = (bridgeV) => {
+    if (
+      bridgesToExclude.find(
+        (b) =>
+          typeof b.x === 'number' &&
+          bridgeV.x === b.x &&
+          bridgeV.y0 === b.y0 &&
+          bridgeV.y1 === b.y1
+      )
+    ) {
+      return;
+    }
+    if (bridgeV.y0 <= water.y && bridgeV.y1 > water.y) {
+      if (bridgeV.x === water.x) {
+        left = false;
+      }
+      if (bridgeV.x === water.x + 1) {
+        right = false;
+      }
+    }
+  };
+  level.bridgesV.forEach(checkBridgeV);
+  for (let i = 0; i < level.islands.length - 1; i++) {
+    for (let j = i + 1; j < level.islands.length; j++) {
+      if (
+        vertAdjacent(level, level.islands[i], level.islands[j]) &&
+        possibleConnections(level, level.islands[i], level.islands[j]) > 0
+      ) {
+        checkBridgeV({
+          x: level.islands[i].x,
+          y0: Math.min(level.islands[i].y, level.islands[j].y),
+          y1: Math.max(level.islands[i].y, level.islands[j].y),
+        });
+      } else if (
+        horAdjacent(level, level.islands[i], level.islands[j]) &&
+        possibleConnections(level, level.islands[i], level.islands[j]) > 0
+      ) {
+        checkBridgeH({
+          x0: Math.min(level.islands[i].x, level.islands[j].x),
+          x1: Math.max(level.islands[i].x, level.islands[j].x),
+          y: level.islands[i].y,
+        });
+      }
+    }
+  }
+
+  // min x and y is -1 max x and y is max island x and y respectively
+  if (water.x <= -1) {
+    left = false;
+  }
+  if (water.y <= -1) {
+    up = false;
+  }
+  let maxX = 0;
+  let maxY = 0;
+  level.islands.forEach((island) => {
+    maxX = Math.max(maxX, island.x);
+    maxY = Math.max(maxY, island.y);
+  });
+  if (water.x >= maxX) {
+    right = false;
+  }
+  if (water.y >= maxY) {
+    down = false;
+  }
+
+  if (up) {
+    result.push({ x: water.x, y: water.y - 1 });
+  }
+  if (down) {
+    result.push({ x: water.x, y: water.y + 1 });
+  }
+  if (left) {
+    result.push({ x: water.x - 1, y: water.y });
+  }
+  if (right) {
+    result.push({ x: water.x + 1, y: water.y });
+  }
+  return result;
+};
+
+const getMustConnectWater = (level, pirate, bridgesToExclude) => {
+  const traversingStack = [pirate];
+  const visited = [pirate];
+
+  while (traversingStack.length > 0) {
+    const water = traversingStack.pop();
+    const connected = mustConnectWater(level, water, bridgesToExclude);
+    forEach(connected, (cW) => {
+      if (!visited.find((w) => w.x === cW.x && w.y === cW.y)) {
+        visited.push(cW);
+        traversingStack.unshift(cW);
+      }
+    });
+  }
+  return visited;
 };
 
 const clear = (level) => {
@@ -513,9 +679,11 @@ module.exports = {
   removeBridge,
   getConnectedIslands,
   fullyConnected,
+  validated,
   clear,
   getPossiblyConnectedIslands,
   connectedByWater,
+  getMustConnectWater,
   islandPairs,
   islandTriples,
   getAdjacentIslands,

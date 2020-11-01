@@ -27,18 +27,23 @@ module.exports = (level) => {
   if (level.boats) {
     level.boats.forEach(
       ({ boat: { x: bx, y: by }, dock: { x: dx, y: dy } }, i) => {
-        lines[by * 2 + 1].splice(
-          bx * 2 + 1,
-          1,
-          'b' + (level.boats.length > 1 ? i : '')
-        );
         lines[dy * 2 + 1].splice(
           dx * 2 + 1,
           1,
           'd' + (level.boats.length > 1 ? i : '')
         );
+        lines[by * 2 + 1].splice(
+          bx * 2 + 1,
+          1,
+          'b' + (level.boats.length > 1 ? i : '')
+        );
       }
     );
+  }
+  if (level.pirates) {
+    level.pirates.forEach(({ x, y }) => {
+      lines[y * 2 + 1].splice(x * 2 + 1, 1, 'p');
+    });
   }
   level.bridgesH.forEach(({ x0, x1, y, n }) => {
     const str = n <= 1 ? '━' : '═';

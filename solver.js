@@ -9,9 +9,10 @@ const {
   full,
   addBridge,
   removeBridge,
-  fullyConnected,
+  validated,
   getPossiblyConnectedIslands,
   connectedByWater,
+  getMustConnectWater,
   clear,
   islandPairs,
   islandTriples,
@@ -299,6 +300,59 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island, islandData) => {
       found = found || changed;
     }
     removeBridge(level, island, adjacentIsland);
+  });
+  return found;
+};
+
+const noPiratedBoatsHeuristic = (level, island, islandData) => {
+  if (!level.boats || !level.pirates) {
+    return false;
+  }
+  const { adjacentIslands } = islandData;
+  let found = false;
+
+  adjacentIslands.forEach((adjacentIsland) => {
+    if (bridgeBetween(level, island, adjacentIsland)) {
+      return;
+    }
+    const bridge =
+      island.x === adjacentIsland.x
+        ? {
+            x: island.x,
+            y0: Math.min(island.y, adjacentIsland.y),
+            y1: Math.max(island.y, adjacentIsland.y),
+          }
+        : {
+            x0: Math.min(island.x, adjacentIsland.x),
+            x1: Math.max(island.x, adjacentIsland.x),
+            y: island.y,
+          };
+    let piratePrevented = false;
+    forEach(level.pirates, (pirate) => {
+      const unbridgedPiratedWaters = getMustConnectWater(level, pirate, [
+        bridge,
+      ]);
+      const bridgedPiratedWaters = getMustConnectWater(level, pirate, []);
+      forEach(level.boats, ({ boat }) => {
+        if (
+          unbridgedPiratedWaters.find(
+            ({ x, y }) => boat.x === x && boat.y === y
+          ) &&
+          !bridgedPiratedWaters.find(({ x, y }) => boat.x === x && boat.y === y)
+        ) {
+          piratePrevented = true;
+          return false;
+        }
+      });
+      if (piratePrevented) {
+        return false;
+      }
+    });
+    if (piratePrevented) {
+      addBridge(level, island, adjacentIsland);
+      found = true;
+    }
+    console.log('');
   });
   return found;
 };
@@ -776,7 +830,7 @@ const guessAndCheck = (nested) => (level, island) => {
       addBridge(levelClone, islandClone, adjacentIslandClone, 1);
       // if we want nesting, we enable guessing on the solve
       solve(levelClone, true, !nested);
-      if (fullyConnected(levelClone)) {
+      if (validated(levelClone)) {
         addBridge(level, island, adjacentIsland, 1);
         found = true;
         return false;
@@ -807,15 +861,16 @@ const heuristics = [
   pigeonholeHeuristic, // 6
   noStrandedIslandsAdvanced1Heuristic, // 7
   noStrandedIslandsAdvanced2Heuristic, // 8
-  onlyChoicesNoBlockedBoatsHeuristic, // 9
-  noStrandedIslandsAdvanced3Heuristic(false), // 10
-  noStrandedIslandsAdvanced3Heuristic(true), // 11
-  unfillableIslandPigeonholeHeuristic(false), // 12
-  unfillableIslandPigeonholeHeuristic(true), // 13
-  noBlockedBoatsPigeonholeHeuristic(false), // 14
-  noBlockedBoatsPigeonholeHeuristic(true), // 15
-  guessAndCheck(false), // 16
-  guessAndCheck(true), // 17
+  noPiratedBoatsHeuristic, // 9
+  onlyChoicesNoBlockedBoatsHeuristic, // 10
+  noStrandedIslandsAdvanced3Heuristic(false), // 11
+  noStrandedIslandsAdvanced3Heuristic(true), // 12
+  unfillableIslandPigeonholeHeuristic(false), // 13
+  unfillableIslandPigeonholeHeuristic(true), // 14
+  noBlockedBoatsPigeonholeHeuristic(false), // 15
+  noBlockedBoatsPigeonholeHeuristic(true), // 16
+  guessAndCheck(false), // 17
+  guessAndCheck(true), // 18
 ];
 
 const getIslandData = (level, island, levelData, recalc) => {
@@ -899,6 +954,10 @@ const solve = (
       `Solved (${solutionData.loops} loops; heuristics: ${solutionData.heuristicsApplied}, complexity: ${solutionData.complexity}):`
     );
   quiet || print(level);
+  if (!validated(level)) {
+    quiet || console.log('Solution is invalid!!!');
+    throw new Error('Invalid final solution');
+  }
   return solutionData;
 };
 
@@ -945,7 +1004,7 @@ solve.hasMultipleSolutions = (
         clear(level);
         addBridge(level, island, adjacentIsland, numBridges);
         solve(level, true, noGuessing, noNestedGuessing);
-        if (fullyConnected(level)) {
+        if (validated(level)) {
           found = true;
           quiet || console.log('Other solution:');
           quiet || print(level);

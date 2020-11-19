@@ -455,7 +455,7 @@ const connectedByWater = (level, boat, dock) => {
 
 // water coordinates are to the bottom right of island coordinates
 // e.g. water 0 0 will be in between island 0 0 and island 1 1
-const mustConnectWater = (level, water, bridgesToExclude) => {
+const mustConnectWater = (level, water, maxX, maxY, bridgesToExclude = []) => {
   const result = [];
   let up = true;
   let down = true;
@@ -540,12 +540,6 @@ const mustConnectWater = (level, water, bridgesToExclude) => {
   if (water.y <= -1) {
     up = false;
   }
-  let maxX = 0;
-  let maxY = 0;
-  level.islands.forEach((island) => {
-    maxX = Math.max(maxX, island.x);
-    maxY = Math.max(maxY, island.y);
-  });
   if (water.x >= maxX) {
     right = false;
   }
@@ -571,10 +565,22 @@ const mustConnectWater = (level, water, bridgesToExclude) => {
 const getMustConnectWater = (level, pirate, bridgesToExclude) => {
   const traversingStack = [pirate];
   const visited = [pirate];
+  let maxX = 0;
+  let maxY = 0;
+  level.islands.forEach((island) => {
+    maxX = Math.max(maxX, island.x);
+    maxY = Math.max(maxY, island.y);
+  });
 
   while (traversingStack.length > 0) {
     const water = traversingStack.pop();
-    const connected = mustConnectWater(level, water, bridgesToExclude);
+    const connected = mustConnectWater(
+      level,
+      water,
+      maxX,
+      maxY,
+      bridgesToExclude
+    );
     forEach(connected, (cW) => {
       if (!visited.find((w) => w.x === cW.x && w.y === cW.y)) {
         visited.push(cW);
@@ -583,6 +589,80 @@ const getMustConnectWater = (level, pirate, bridgesToExclude) => {
     });
   }
   return visited;
+};
+
+const connectedOutside = (level, startingWater, bridgesToExclude = []) => {
+  const traversingStack = [startingWater];
+  const visited = [startingWater];
+  let maxX = 0;
+  let maxY = 0;
+  level.islands.forEach((island) => {
+    maxX = Math.max(maxX, island.x);
+    maxY = Math.max(maxY, island.y);
+  });
+
+  let outside = false;
+  while (traversingStack.length > 0) {
+    const water = traversingStack.pop();
+    const connected = mustConnectWater(
+      level,
+      water,
+      maxX,
+      maxY,
+      bridgesToExclude
+    );
+    forEach(connected, (cW) => {
+      if (cW.x <= -1 || cW.y <= -1 || cW.x >= maxX || cW.y >= maxY) {
+        outside = true;
+        return false;
+      }
+      if (!visited.find((w) => w.x === cW.x && w.y === cW.y)) {
+        visited.push(cW);
+        traversingStack.unshift(cW);
+      }
+    });
+  }
+  return outside;
+};
+
+const allBridgePossibilities = (level, island, adjacentIslands) => {
+  const bLeft = bridgesLeft(island);
+  const islands = [];
+  let possibilities = [];
+  forEach(adjacentIslands, (aI, i) => {
+    islands.push(aI);
+    if (possibleConnections(level, island, aI) > 1) {
+      islands.push(aI);
+    }
+    if (adjacentIslands.length - i + 1 < bLeft) {
+      return false;
+    }
+    possibilities.push([aI]);
+  });
+
+  let count = 1;
+  while (count < bLeft) {
+    const prevPossibilities = possibilities;
+    possibilities = [];
+    prevPossibilities.forEach((poss) => {
+      forEach(islands, (is, i) => {
+        if (islands.length - i + 1 < bLeft - count) {
+          return false;
+        }
+        if (
+          i > islands.indexOf(poss[poss.length - 1]) &&
+          poss[poss.length - 1] !== poss[poss.length - 2]
+        ) {
+          const newPoss = poss.slice();
+          newPoss.push(is);
+          possibilities.push(newPoss);
+        }
+      });
+    });
+    count += 1;
+  }
+
+  return possibilities;
 };
 
 const clear = (level) => {
@@ -700,10 +780,12 @@ module.exports = {
   getConnectedIslands,
   fullyConnected,
   validated,
+  allBridgePossibilities,
   clear,
   getPossiblyConnectedIslands,
   connectedByWater,
   getMustConnectWater,
+  connectedOutside,
   islandPairs,
   islandTriples,
   getAdjacentIslands,

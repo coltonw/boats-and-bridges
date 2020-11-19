@@ -13,6 +13,8 @@ const {
   getPossiblyConnectedIslands,
   connectedByWater,
   getMustConnectWater,
+  connectedOutside,
+  allBridgePossibilities,
   clear,
   islandPairs,
   islandTriples,
@@ -337,12 +339,20 @@ const noPiratedBoatsHeuristic = (level, island, islandData) => {
         bridge,
       ]);
       const bridgedPiratedWaters = getMustConnectWater(level, pirate, []);
-      forEach(level.boats, ({ boat }) => {
+      forEach(level.boats, ({ boat, dock }) => {
         if (
-          unbridgedPiratedWaters.find(
+          (unbridgedPiratedWaters.find(
             ({ x, y }) => boat.x === x && boat.y === y
           ) &&
-          !bridgedPiratedWaters.find(({ x, y }) => boat.x === x && boat.y === y)
+            !bridgedPiratedWaters.find(
+              ({ x, y }) => boat.x === x && boat.y === y
+            )) ||
+          (unbridgedPiratedWaters.find(
+            ({ x, y }) => dock.x === x && dock.y === y
+          ) &&
+            !bridgedPiratedWaters.find(
+              ({ x, y }) => dock.x === x && dock.y === y
+            ))
         ) {
           piratePrevented = true;
           return false;
@@ -377,8 +387,11 @@ const noPiratedBoatsPreventBridgeHeuristic = (level, island, islandData) => {
     let piratedBoat = false;
     forEach(level.pirates, (pirate) => {
       const piratedWaters = getMustConnectWater(level, pirate, []);
-      forEach(level.boats, ({ boat }) => {
-        if (piratedWaters.find(({ x, y }) => boat.x === x && boat.y === y)) {
+      forEach(level.boats, ({ boat, dock }) => {
+        if (
+          piratedWaters.find(({ x, y }) => boat.x === x && boat.y === y) ||
+          piratedWaters.find(({ x, y }) => dock.x === x && dock.y === y)
+        ) {
           piratedBoat = true;
           return false;
         }
@@ -387,6 +400,207 @@ const noPiratedBoatsPreventBridgeHeuristic = (level, island, islandData) => {
         return false;
       }
     });
+    removeBridge(level, island, adjacentIsland);
+    if (piratedBoat) {
+      const changed = addMaxBridge(
+        level,
+        island,
+        adjacentIsland,
+        bridgeBetween(level, island, adjacentIsland) ? 1 : 0
+      );
+      found = found || changed;
+    }
+  });
+  return found;
+};
+
+// This is for boats, so to make sure this only happens once, we only do it for the first island.
+const boatsConnectedOutside = (level, island, islandData) => {
+  if (
+    !islandData.first ||
+    level.boatConnectedOutside ||
+    level.pirateConnectedOutside ||
+    !level.pirates ||
+    !level.boats
+  ) {
+    return false;
+  }
+
+  forEach(level.boats, ({ boat, dock }) => {
+    if (connectedOutside(level, boat) || connectedOutside(level, dock)) {
+      level.boatConnectedOutside = true;
+      return false;
+    }
+  });
+
+  forEach(level.pirates, (pirate) => {
+    if (connectedOutside(level, pirate)) {
+      level.pirateConnectedOutside = true;
+      return false;
+    }
+  });
+
+  if (level.boatConnectedOutside && level.pirateConnectedOutside) {
+    throw new Error('Inescapable pirate');
+  }
+
+  return level.boatConnectedOutside || level.pirateConnectedOutside;
+};
+
+const boatMustConnectOutside = (level, island, islandData) => {
+  if (
+    !island.b ||
+    level.boatConnectedOutside ||
+    level.pirateConnectedOutside ||
+    !level.pirates ||
+    !level.boats
+  ) {
+    return false;
+  }
+
+  const { adjacentIslands } = islandData;
+
+  const possibilities = allBridgePossibilities(level, island, adjacentIslands);
+
+  let boatPossiblyMustConnectOutside = true;
+  let piratePossiblyMustConnectOutside = true;
+  forEach(possibilities, (poss) => {
+    forEach(poss, (aI) => {
+      addBridge(level, island, aI);
+    });
+
+    if (boatPossiblyMustConnectOutside) {
+      let boatConnectedOutside = false;
+
+      forEach(level.boats, ({ boat, dock }) => {
+        if (connectedOutside(level, boat) || connectedOutside(level, dock)) {
+          boatConnectedOutside = true;
+          return false;
+        }
+      });
+      if (!boatConnectedOutside) {
+        boatPossiblyMustConnectOutside = false;
+      }
+    }
+    if (piratePossiblyMustConnectOutside) {
+      let pirateConnectedOutside = false;
+
+      forEach(level.pirates, (pirate) => {
+        if (connectedOutside(level, pirate)) {
+          pirateConnectedOutside = true;
+          return false;
+        }
+      });
+      if (!pirateConnectedOutside) {
+        piratePossiblyMustConnectOutside = false;
+      }
+    }
+
+    forEach(poss, (aI) => {
+      removeBridge(level, island, aI);
+    });
+
+    if (!boatPossiblyMustConnectOutside && !piratePossiblyMustConnectOutside) {
+      return false;
+    }
+  });
+  if (boatPossiblyMustConnectOutside) {
+    level.boatConnectedOutside = true;
+  }
+  if (piratePossiblyMustConnectOutside) {
+    level.pirateConnectedOutside = true;
+  }
+
+  if (level.boatConnectedOutside && level.pirateConnectedOutside) {
+    throw new Error('Inescapable pirate');
+  }
+
+  return level.boatConnectedOutside || level.pirateConnectedOutside;
+};
+
+
+const noPiratedBoatsOutsideHeuristic = (level, island, islandData) => {
+  if (!level.boats || !level.pirates || (!level.boatConnectedOutside && !level.pirateConnectedOutside)) {
+    return false;
+  }
+  const { adjacentIslands } = islandData;
+  let found = false;
+
+  adjacentIslands.forEach((adjacentIsland) => {
+    if (bridgeBetween(level, island, adjacentIsland)) {
+      return;
+    }
+    const bridge =
+      island.x === adjacentIsland.x
+        ? {
+            x: island.x,
+            y0: Math.min(island.y, adjacentIsland.y),
+            y1: Math.max(island.y, adjacentIsland.y),
+          }
+        : {
+            x0: Math.min(island.x, adjacentIsland.x),
+            x1: Math.max(island.x, adjacentIsland.x),
+            y: island.y,
+          };
+    let piratePrevented = false;
+    if (level.boatConnectedOutside) {
+      forEach(level.pirates, (pirate) => {
+        if (connectedOutside(level, pirate, [
+          bridge,
+        ])) {
+          piratePrevented = true;
+          return false;
+        }
+      });
+    }
+    if (level.pirateConnectedOutside) {
+      forEach(level.boats, ({ boat, dock }) => {
+        if (connectedOutside(level, boat, [
+          bridge,
+        ]) || connectedOutside(level, dock, [
+          bridge,
+        ])) {
+          piratePrevented = true;
+          return false;
+        }
+      });
+    }
+    if (piratePrevented) {
+      addBridge(level, island, adjacentIsland);
+      found = true;
+    }
+  });
+  return found;
+};
+
+
+const noPiratedBoatsOutsidePreventBridgeHeuristic = (level, island, islandData) => {
+  if (!level.boats || !level.pirates || (!level.boatConnectedOutside && !level.pirateConnectedOutside)) {
+    return false;
+  }
+  const { adjacentIslands } = islandData;
+  let found = false;
+
+  adjacentIslands.forEach((adjacentIsland) => {
+    addBridge(level, island, adjacentIsland);
+    let piratedBoat = false;
+    if (level.boatConnectedOutside) {
+      forEach(level.pirates, (pirate) => {
+          if (connectedOutside(level, pirate)) {
+            piratedBoat = true;
+            return false;
+          }
+      });
+    }
+    
+    if (level.pirateConnectedOutside) {
+      forEach(level.boats, ({ boat, dock }) => {
+        if (connectedOutside(level, boat) || connectedOutside(level, dock)) {
+          piratedBoat = true;
+          return false;
+        }
+      });
+    }
     removeBridge(level, island, adjacentIsland);
     if (piratedBoat) {
       const changed = addMaxBridge(
@@ -937,18 +1151,22 @@ const heuristics = [
   pigeonholeHeuristic, // 6
   noPiratedBoatsHeuristic, // 7
   noPiratedBoatsPreventBridgeHeuristic, // 8
-  noStrandedIslandsAdvanced1Heuristic, // 9
-  noStrandedIslandsAdvanced2Heuristic, // 10
-  onlyChoicesNoBlockedBoatsHeuristic, // 11
-  noStrandedIslandsAdvanced3Heuristic(false), // 12
-  noStrandedIslandsAdvanced3Heuristic(true), // 13
-  unfillableIslandPigeonholeHeuristic(false), // 14
-  unfillableIslandPigeonholeHeuristic(true), // 15
-  noBlockedBoatsPigeonholeHeuristic(false), // 16
-  noBlockedBoatsPigeonholeHeuristic(true), // 17
-  evenOrOddQuestion, // 18
-  guessAndCheck(false), // 19
-  guessAndCheck(true), // 20
+  boatsConnectedOutside, // 9
+  boatMustConnectOutside, // 10
+  noPiratedBoatsOutsideHeuristic, // 11
+  noPiratedBoatsOutsidePreventBridgeHeuristic, // 12
+  noStrandedIslandsAdvanced1Heuristic, // 13
+  noStrandedIslandsAdvanced2Heuristic, // 14
+  onlyChoicesNoBlockedBoatsHeuristic, // 15
+  noStrandedIslandsAdvanced3Heuristic(false), // 16
+  noStrandedIslandsAdvanced3Heuristic(true), // 17
+  unfillableIslandPigeonholeHeuristic(false), // 18
+  unfillableIslandPigeonholeHeuristic(true), // 19
+  noBlockedBoatsPigeonholeHeuristic(false), // 20
+  noBlockedBoatsPigeonholeHeuristic(true), // 21
+  evenOrOddQuestion, // 22
+  guessAndCheck(false), // 23
+  guessAndCheck(true), // 24
 ];
 
 const getIslandData = (level, island, levelData, recalc) => {
@@ -983,6 +1201,7 @@ const solve = (
     const clonedLevel = cloneDeep(level);
     // Probably in the future we will need to have heuristics check more than just one island at a time, but for now this works
     for (let h = 0; h < heurLen; h++) {
+      let first = true;
       forEach(level.islands, (island) => {
         let islandData = getIslandData(level, island, levelData, h === 0);
         levelData[`${island.x}_${island.y}`] = islandData;
@@ -990,9 +1209,10 @@ const solve = (
           const heuristicWorked = heuristics[h](
             level,
             island,
-            islandData,
+            { ...islandData, first },
             levelData
           );
+          first = false;
           if (heuristicWorked) {
             // quiet || console.log(h);
             // quiet || print(level);

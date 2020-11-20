@@ -1297,12 +1297,7 @@ module.exports = solve;
 
 solve.heuristics = heuristics;
 
-solve.hasMultipleSolutions = (
-  level,
-  quiet = false,
-  noGuessing = false,
-  noNestedGuessing = false
-) => {
+solve.hasMultipleSolutions = (level, quiet = false, maxDepth = 8) => {
   const solvedLevel = cloneDeep(level);
   fastSolve(solvedLevel, true);
   let found = false;
@@ -1335,7 +1330,7 @@ solve.hasMultipleSolutions = (
         const numBridges = bridge ? 2 : 1;
         clear(level);
         addBridge(level, island, adjacentIsland, numBridges);
-        fastSolve(level, true);
+        fastSolve(level, true, maxDepth);
         if (validated(level)) {
           found = true;
           quiet || console.log('Other solution:');

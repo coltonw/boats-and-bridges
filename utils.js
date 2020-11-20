@@ -1,4 +1,4 @@
-const { forEach } = require('lodash');
+const { forEach, cloneDeep, clone } = require('lodash');
 
 const bridgesLeft = (island) => (island.b || 8) - island.n;
 
@@ -673,6 +673,8 @@ const clear = (level) => {
   level.bridgesV = [];
   delete level.maxBridgesH;
   delete level.maxBridgesV;
+  delete level.boatConnectedOutside;
+  delete level.pirateConnectedOutside;
 };
 
 const possiblyConnectedIslands = (level, island, exclude = []) => {

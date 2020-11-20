@@ -1,5 +1,5 @@
 // the lodash forEach allows returning false to stop it
-const { cloneDeep, forEach, partition } = require('lodash');
+const { cloneDeep, forEach, partition, clone } = require('lodash');
 const print = require('./print');
 const {
   bridgesLeft,
@@ -518,9 +518,12 @@ const boatMustConnectOutside = (level, island, islandData) => {
   return level.boatConnectedOutside || level.pirateConnectedOutside;
 };
 
-
 const noPiratedBoatsOutsideHeuristic = (level, island, islandData) => {
-  if (!level.boats || !level.pirates || (!level.boatConnectedOutside && !level.pirateConnectedOutside)) {
+  if (
+    !level.boats ||
+    !level.pirates ||
+    (!level.boatConnectedOutside && !level.pirateConnectedOutside)
+  ) {
     return false;
   }
   const { adjacentIslands } = islandData;
@@ -545,9 +548,7 @@ const noPiratedBoatsOutsideHeuristic = (level, island, islandData) => {
     let piratePrevented = false;
     if (level.boatConnectedOutside) {
       forEach(level.pirates, (pirate) => {
-        if (connectedOutside(level, pirate, [
-          bridge,
-        ])) {
+        if (connectedOutside(level, pirate, [bridge])) {
           piratePrevented = true;
           return false;
         }
@@ -555,11 +556,10 @@ const noPiratedBoatsOutsideHeuristic = (level, island, islandData) => {
     }
     if (level.pirateConnectedOutside) {
       forEach(level.boats, ({ boat, dock }) => {
-        if (connectedOutside(level, boat, [
-          bridge,
-        ]) || connectedOutside(level, dock, [
-          bridge,
-        ])) {
+        if (
+          connectedOutside(level, boat, [bridge]) ||
+          connectedOutside(level, dock, [bridge])
+        ) {
           piratePrevented = true;
           return false;
         }
@@ -573,9 +573,16 @@ const noPiratedBoatsOutsideHeuristic = (level, island, islandData) => {
   return found;
 };
 
-
-const noPiratedBoatsOutsidePreventBridgeHeuristic = (level, island, islandData) => {
-  if (!level.boats || !level.pirates || (!level.boatConnectedOutside && !level.pirateConnectedOutside)) {
+const noPiratedBoatsOutsidePreventBridgeHeuristic = (
+  level,
+  island,
+  islandData
+) => {
+  if (
+    !level.boats ||
+    !level.pirates ||
+    (!level.boatConnectedOutside && !level.pirateConnectedOutside)
+  ) {
     return false;
   }
   const { adjacentIslands } = islandData;
@@ -586,13 +593,13 @@ const noPiratedBoatsOutsidePreventBridgeHeuristic = (level, island, islandData) 
     let piratedBoat = false;
     if (level.boatConnectedOutside) {
       forEach(level.pirates, (pirate) => {
-          if (connectedOutside(level, pirate)) {
-            piratedBoat = true;
-            return false;
-          }
+        if (connectedOutside(level, pirate)) {
+          piratedBoat = true;
+          return false;
+        }
       });
     }
-    
+
     if (level.pirateConnectedOutside) {
       forEach(level.boats, ({ boat, dock }) => {
         if (connectedOutside(level, boat) || connectedOutside(level, dock)) {
@@ -1180,6 +1187,36 @@ const getIslandData = (level, island, levelData, recalc) => {
   }
 };
 
+const analyzeSolution = (level, solutionData, quiet) => {
+  let complexity = 0;
+  solutionData.maxHeuristic = 0;
+  for (let i = 0; i < solutionData.heuristicsApplied.length; i++) {
+    complexity += Math.log2(solutionData.heuristicsApplied[i] + 2) - 1;
+    // I call this "thrashing" and I think more accurately represents complexity than just the index of the heuristic
+    if (
+      i > 0 &&
+      solutionData.heuristicsApplied[i] < solutionData.heuristicsApplied[i - 1]
+    ) {
+      complexity += Math.log2(solutionData.heuristicsApplied[i] + 2) - 1;
+    }
+
+    solutionData.maxHeuristic = Math.max(
+      solutionData.maxHeuristic,
+      solutionData.heuristicsApplied[i]
+    );
+  }
+  solutionData.complexity =
+    (complexity / solutionData.heuristicsApplied.length) * 30 +
+    solutionData.maxHeuristic * 2 +
+    level.islands.length / 2;
+  quiet ||
+    console.log(
+      `Solved (${solutionData.loops} loops; heuristics: ${
+        solutionData.heuristicsApplied
+      }, complexity: ${solutionData.complexity.toFixed(0)}):`
+    );
+};
+
 const solve = (
   level,
   quiet = false,
@@ -1198,9 +1235,12 @@ const solve = (
     let somethingChanged = false;
     const heurLen =
       heuristics.length - (noGuessing ? 2 : noNestedGuessing ? 1 : 0);
-    const clonedLevel = cloneDeep(level);
     // Probably in the future we will need to have heuristics check more than just one island at a time, but for now this works
     for (let h = 0; h < heurLen; h++) {
+      let clonedLevel = level;
+      if (h >= heuristics.length - 2) {
+        clonedLevel = cloneDeep(level);
+      }
       let first = true;
       forEach(level.islands, (island) => {
         let islandData = getIslandData(level, island, levelData, h === 0);
@@ -1244,33 +1284,7 @@ const solve = (
       throw new Error('Suspected infinite loop');
     }
   }
-  let complexity = 0;
-  solutionData.maxHeuristic = 0;
-  for (let i = 0; i < solutionData.heuristicsApplied.length; i++) {
-    complexity += Math.log2(solutionData.heuristicsApplied[i] + 2) - 1;
-    // I call this "thrashing" and I think more accurately represents complexity than just the index of the heuristic
-    if (
-      i > 0 &&
-      solutionData.heuristicsApplied[i] < solutionData.heuristicsApplied[i - 1]
-    ) {
-      complexity += Math.log2(solutionData.heuristicsApplied[i] + 2) - 1;
-    }
-
-    solutionData.maxHeuristic = Math.max(
-      solutionData.maxHeuristic,
-      solutionData.heuristicsApplied[i]
-    );
-  }
-  solutionData.complexity =
-    (complexity / solutionData.heuristicsApplied.length) * 30 +
-    solutionData.maxHeuristic * 2 +
-    level.islands.length / 2;
-  quiet ||
-    console.log(
-      `Solved (${solutionData.loops} loops; heuristics: ${
-        solutionData.heuristicsApplied
-      }, complexity: ${solutionData.complexity.toFixed(0)}):`
-    );
+  analyzeSolution(level, solutionData, quiet);
   quiet || print(level);
   if (!validated(level)) {
     quiet || console.log('Solution is invalid!!!');
@@ -1290,7 +1304,7 @@ solve.hasMultipleSolutions = (
   noNestedGuessing = false
 ) => {
   const solvedLevel = cloneDeep(level);
-  solve(solvedLevel, true, noGuessing, noNestedGuessing);
+  fastSolve(solvedLevel, true);
   let found = false;
   forEach(level.islands, (island, i) => {
     let adjacentIslands = [];
@@ -1321,7 +1335,7 @@ solve.hasMultipleSolutions = (
         const numBridges = bridge ? 2 : 1;
         clear(level);
         addBridge(level, island, adjacentIsland, numBridges);
-        solve(level, true, noGuessing, noNestedGuessing);
+        fastSolve(level, true);
         if (validated(level)) {
           found = true;
           quiet || console.log('Other solution:');
@@ -1336,3 +1350,156 @@ solve.hasMultipleSolutions = (
   });
   return found;
 };
+
+const fastHeuristics = [
+  onlyChoiceSimpleHeuristic, // 0
+  onlyChoiceHeuristic, // 1
+  onlyChoicesHeuristic, // 2
+  moreBridgesThanChoicesHeuristic, // 3
+  noStrandedIslandsSimpleHeuristic, // 4
+  pigeonholeHeuristic, // 5
+  noStrandedIslandsAdvanced1Heuristic, // 6
+  noStrandedIslandsAdvanced2Heuristic, // 7
+  noStrandedIslandsAdvanced3Heuristic(true), // 8
+  unfillableIslandPigeonholeHeuristic(true), // 9
+  evenOrOddQuestion, // 10
+  noBlockedBoatsHeuristic, // 11
+  onlyChoicesNoBlockedBoatsHeuristic, // 12
+  noBlockedBoatsPigeonholeHeuristic(true), // 13
+  noPiratedBoatsHeuristic, // 14
+  noPiratedBoatsPreventBridgeHeuristic, // 15
+];
+
+const fastSolveInner = (level) => {
+  let levelData = {};
+  let loops = 0;
+  while (!solved(level)) {
+    loops += 1;
+    let somethingChanged = false;
+    for (let h = 0; h < fastHeuristics.length; h++) {
+      let first = true;
+      forEach(level.islands, (island) => {
+        let islandData = getIslandData(level, island, levelData, h === 0);
+        levelData[`${island.x}_${island.y}`] = islandData;
+        if (!full(island)) {
+          const heuristicWorked = fastHeuristics[h](
+            level,
+            island,
+            { ...islandData, first },
+            levelData
+          );
+          first = false;
+          if (heuristicWorked) {
+            // quiet || console.log(h);
+            // quiet || print(level);
+            somethingChanged = true;
+            levelData = {};
+            islandData = getIslandData(level, island, levelData, true);
+            levelData[`${island.x}_${island.y}`] = islandData;
+          }
+        }
+      });
+      // We want to keep repeating with the easiest heuristics until there is "no choice" but to use the more complex ones
+      if (somethingChanged) {
+        break;
+      }
+    }
+
+    if (!somethingChanged) {
+      break;
+    }
+
+    if (loops > 200) {
+      console.log('FLAGRANT ERROR: infinite loop');
+      throw new Error('Infinite loops? We should never reach this');
+    }
+  }
+};
+
+const fastSolve = (level, quiet = false, maxDepth = 8) => {
+  // quiet || console.log('Unsolved:');
+  // quiet || print(level);
+  fastSolveInner(level);
+  let bridges = [];
+  forEach(level.islands, (island, i) => {
+    forEach(level.islands.slice(i + 1), (otherIsland) => {
+      if (
+        adjacent(level, island, otherIsland) &&
+        possibleConnections(level, island, otherIsland) > 0
+      ) {
+        bridges.push({
+          island,
+          otherIsland,
+          n: possibleConnections(level, island, otherIsland),
+          index: bridges.length,
+        });
+      }
+    });
+  });
+  let guessDepth = 1;
+  while (
+    !solved(level) &&
+    bridges.reduce((sum, { n }) => sum + n, 0) >= guessDepth &&
+    guessDepth <= maxDepth
+  ) {
+    let options = [];
+    forEach(bridges, ({ island, otherIsland, index }) => {
+      options.push([{ island, otherIsland, n: 1, index }]);
+    });
+    for (let i = 1; i < guessDepth; i++) {
+      const oldOptions = options;
+      options = [];
+      forEach(bridges, ({ island, otherIsland, n, index }) => {
+        forEach(oldOptions, (oldOption) => {
+          const lastBridge = oldOption[oldOption.length - 1];
+          if (lastBridge.index > index) {
+            return;
+          }
+          if (lastBridge.n === 1 && lastBridge.index === index && n > 1) {
+            const newOption = oldOption.map((b) => clone(b));
+            newOption[newOption.length - 1].n = 2;
+            options.push(newOption);
+          } else if (lastBridge.index < index) {
+            const newOption = oldOption.map((b) => clone(b));
+            newOption.push({ island, otherIsland, n: 1, index });
+            options.push(newOption);
+          }
+        });
+      });
+    }
+    // console.log('');
+    // console.dir(options[0]);
+    forEach(options, (option) => {
+      try {
+        const clonedLevel = cloneDeep(level);
+        forEach(option, ({ island, otherIsland, n }) => {
+          const clonedIsland = clonedLevel.islands.find(
+            (i) => i.x === island.x && i.y === island.y
+          );
+          const clonedOther = clonedLevel.islands.find(
+            (i) => i.x === otherIsland.x && i.y === otherIsland.y
+          );
+          addBridge(clonedLevel, clonedIsland, clonedOther, n);
+        });
+        fastSolveInner(clonedLevel);
+        if (solved(clonedLevel) && validated(clonedLevel)) {
+          forEach(option, ({ island, otherIsland, n }) => {
+            addBridge(level, island, otherIsland, n);
+          });
+          fastSolveInner(level);
+        }
+      } catch (e) {}
+    });
+    guessDepth += 1;
+  }
+  quiet || print(level);
+  if (guessDepth > maxDepth) {
+    quiet || console.log('We gave up');
+  }
+  if (!validated(level)) {
+    quiet || console.log('Solution is invalid!!!');
+    throw new Error('Invalid final solution');
+  }
+};
+
+solve.fastSolve = fastSolve;

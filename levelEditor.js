@@ -72,12 +72,7 @@ const solveAndRender = (quiet = false) => {
     timeouts.push(
       setTimeout(() => {
         clear(level);
-        const multipleSolutions = solver.hasMultipleSolutions(
-          level,
-          true,
-          false,
-          true
-        );
+        const multipleSolutions = solver.hasMultipleSolutions(level, true, 4);
         if (multipleSolutions) {
           renderLevel();
           timeouts.push(setTimeout(() => run(true), 1200));

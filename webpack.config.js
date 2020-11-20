@@ -14,6 +14,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.worker\.js$/,
+        use: { loader: 'worker-loader' },
+      },
+      {
         test: /\.(js|jsx)$/,
         include: [],
         loader: 'babel-loader',

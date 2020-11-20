@@ -1,11 +1,14 @@
 import solver from './solver.js';
 import { clear } from './utils';
 import yaml from 'js-yaml';
-import { debounce } from 'lodash';
+import { debounce, cloneDeep } from 'lodash';
+import Worker from './levelEditor.worker.js';
 
 const levelElement = document.getElementById('level');
 
 const scale = 15;
+
+const w = new Worker();
 
 let storedLevel = null;
 try {
@@ -59,36 +62,29 @@ const loadYaml = () => {
 
 const solveAndRender = (quiet = false) => {
   clear(level);
-  let solution = null;
+  let guesses = null;
   try {
-    // No nested guessing because it takes too long and crashes the browser
-    solution = solver(level, quiet, false, true);
+    // Low depth of guessing because it takes too long and crashes the browser
+    w.postMessage(level);
+    guesses = solver.fastSolve(level, quiet, 2);
   } catch (e) {
     console.log(e);
   }
-  if (solution) {
+  if (guesses !== null) {
     timeouts.forEach((t) => clearTimeout(t));
     timeouts = [];
+    console.log(guesses);
     timeouts.push(
       setTimeout(() => {
         clear(level);
-        const multipleSolutions = solver.hasMultipleSolutions(
-          level,
-          true,
-          false,
-          true
-        );
+        const multipleSolutions = solver.hasMultipleSolutions(level, true, 2);
         if (multipleSolutions) {
           renderLevel();
           timeouts.push(setTimeout(() => run(true), 1200));
-        } else if (
-          solution.heuristicsApplied.indexOf(solver.heuristics.length - 2) >
-            -1 ||
-          solution.heuristicsApplied.indexOf(solver.heuristics.length - 1) > -1
-        ) {
+        } else if (guesses > 0) {
           clear(level);
           try {
-            solver(level, true, true);
+            solver.fastSolve(level, true, 0);
           } catch (e) {}
           renderLevel();
           timeouts.push(setTimeout(() => run(true), 1200));

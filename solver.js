@@ -1297,14 +1297,9 @@ module.exports = solve;
 
 solve.heuristics = heuristics;
 
-solve.hasMultipleSolutions = (
-  level,
-  quiet = false,
-  noGuessing = false,
-  noNestedGuessing = false
-) => {
+solve.hasMultipleSolutions = (level, quiet = false, maxDepth = 8) => {
   const solvedLevel = cloneDeep(level);
-  fastSolve(solvedLevel, true);
+  fastSolve(solvedLevel, true, maxDepth);
   let found = false;
   forEach(level.islands, (island, i) => {
     let adjacentIslands = [];
@@ -1335,7 +1330,7 @@ solve.hasMultipleSolutions = (
         const numBridges = bridge ? 2 : 1;
         clear(level);
         addBridge(level, island, adjacentIsland, numBridges);
-        fastSolve(level, true);
+        fastSolve(level, true, maxDepth);
         if (validated(level)) {
           found = true;
           quiet || console.log('Other solution:');
@@ -1436,12 +1431,13 @@ const fastSolve = (level, quiet = false, maxDepth = 8) => {
       }
     });
   });
-  let guessDepth = 1;
+  let guessDepth = 0;
   while (
     !solved(level) &&
     bridges.reduce((sum, { n }) => sum + n, 0) >= guessDepth &&
-    guessDepth <= maxDepth
+    guessDepth < maxDepth
   ) {
+    guessDepth += 1;
     let options = [];
     forEach(bridges, ({ island, otherIsland, index }) => {
       options.push([{ island, otherIsland, n: 1, index }]);
@@ -1490,16 +1486,20 @@ const fastSolve = (level, quiet = false, maxDepth = 8) => {
         }
       } catch (e) {}
     });
-    guessDepth += 1;
   }
   quiet || print(level);
-  if (guessDepth > maxDepth) {
-    quiet || console.log('We gave up');
+
+  if (!solved(level)) {
+    if (guessDepth === maxDepth) {
+      quiet || console.log('We gave up');
+    }
+    throw new Error('Unsolved');
   }
   if (!validated(level)) {
     quiet || console.log('Solution is invalid!!!');
     throw new Error('Invalid final solution');
   }
+  return guessDepth;
 };
 
 solve.fastSolve = fastSolve;

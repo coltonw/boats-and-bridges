@@ -11,6 +11,7 @@ const {
   removeBridge,
   validated,
   getPossiblyConnectedIslands,
+  getPossiblyDoubleConnectedIslands,
   connectedByWater,
   getMustConnectWater,
   connectedOutside,
@@ -259,21 +260,11 @@ const noStrandedIslandsAdvanced1Heuristic = (level, island) => {
     const myIslands = getPossiblyConnectedIslands(level, island, [
       adjacentIsland,
     ]);
-    const yourIslands = getPossiblyConnectedIslands(level, adjacentIsland, [
-      island,
-    ]);
-    let intersect = false;
-    for (let i = 0; i < myIslands.length; i++) {
-      if (
-        yourIslands.find(
-          (yI) => yI.x === myIslands[i].x && yI.y === myIslands[i].y
-        )
-      ) {
-        intersect = true;
-        break;
-      }
-    }
-    if (!intersect) {
+    if (
+      !myIslands.find(
+        (mI) => mI.x === adjacentIsland.x && mI.y === adjacentIsland.y
+      )
+    ) {
       addBridge(level, island, adjacentIsland, 1);
       found = true;
     }
@@ -618,6 +609,76 @@ const noPiratedBoatsOutsidePreventBridgeHeuristic = (
       );
       found = found || changed;
     }
+  });
+  return found;
+};
+
+// 1. Must double connect or the truck is stranded:
+//    T = X   X = G   Where T and G CANNOT double connect via any other links
+const noStrandedTrucksHeuristic = (level, island) => {
+  if (!level.trucks) {
+    return false;
+  }
+  let found = false;
+  for (let i = 0; i < level.islands.length; i++) {
+    const bridge = bridgeBetween(level, island, level.islands[i]) || { n: 0 };
+    if (
+      adjacent(level, island, level.islands[i]) &&
+      possibleConnections(level, island, level.islands[i]) + bridge.n > 1 &&
+      bridge.n < 2
+    ) {
+      const adjacentIsland = level.islands[i];
+      const doubleIslands = getPossiblyDoubleConnectedIslands(level, island, [
+        adjacentIsland,
+      ]);
+      let stranded = false;
+      forEach(level.trucks, ({ truck, garage }) => {
+        const hasTruck = !!doubleIslands.find(
+          ({ x, y }) => x === truck.x && y === truck.y
+        );
+        const hasGarage = !!doubleIslands.find(
+          ({ x, y }) => x === garage.x && y === garage.y
+        );
+        // We assume the level is solvable.
+        // if the level is not solveable, it is possible that this will always be true and will result in lots and lots of bridges...
+        if (hasTruck !== hasGarage) {
+          stranded = true;
+          return false;
+        }
+      });
+      if (stranded) {
+        addBridge(level, island, adjacentIsland, 2 - bridge.n);
+        found = true;
+      }
+    }
+  }
+
+  return found;
+};
+
+// TODO:::::
+// Stranded island heuristic:
+// 2. Must max bridge or stranded:
+//    A - A
+//
+//    X   X - B
+//    |       |
+//    B - B - B   Where A and B CANNOT connect via any other links
+const noStrandedTrucksMaxBridgeHeuristic = (level, island, islandData) => {
+  const { adjacentIslands } = islandData;
+
+  let found = false;
+  adjacentIslands.forEach((adjacentIsland) => {
+    const maxAmount = bridgeBetween(level, island, adjacentIsland)
+      ? 1
+      : possibleConnections(level, island, adjacentIsland) - 1;
+    addBridge(level, island, adjacentIsland);
+    const connectedIslands = getPossiblyDoubleConnectedIslands(level, island);
+    if (connectedIslands.length < level.islands.length) {
+      const changed = addMaxBridge(level, island, adjacentIsland, maxAmount);
+      found = found || changed;
+    }
+    removeBridge(level, island, adjacentIsland);
   });
   return found;
 };
@@ -1167,13 +1228,14 @@ const heuristics = [
   onlyChoicesNoBlockedBoatsHeuristic, // 15
   noStrandedIslandsAdvanced3Heuristic(false), // 16
   noStrandedIslandsAdvanced3Heuristic(true), // 17
-  unfillableIslandPigeonholeHeuristic(false), // 18
-  unfillableIslandPigeonholeHeuristic(true), // 19
-  noBlockedBoatsPigeonholeHeuristic(false), // 20
-  noBlockedBoatsPigeonholeHeuristic(true), // 21
-  evenOrOddQuestion, // 22
-  guessAndCheck(false), // 23
-  guessAndCheck(true), // 24
+  noStrandedTrucksHeuristic, // 18
+  unfillableIslandPigeonholeHeuristic(false), // 19
+  unfillableIslandPigeonholeHeuristic(true), // 20
+  noBlockedBoatsPigeonholeHeuristic(false), // 21
+  noBlockedBoatsPigeonholeHeuristic(true), // 22
+  evenOrOddQuestion, // 23
+  guessAndCheck(false), // 24
+  guessAndCheck(true), // 25
 ];
 
 const getIslandData = (level, island, levelData, recalc) => {
@@ -1299,7 +1361,7 @@ solve.heuristics = heuristics;
 
 solve.hasMultipleSolutions = (level, quiet = false, maxDepth = 8) => {
   const solvedLevel = cloneDeep(level);
-  fastSolve(solvedLevel, true);
+  solve(solvedLevel, true);
   let found = false;
   forEach(level.islands, (island, i) => {
     let adjacentIslands = [];

@@ -63,18 +63,26 @@ module.exports = (level) => {
       lines[i].splice(x * 2, 1, str);
     }
   });
+  if (level.trucks) {
+    level.trucks.forEach(
+      ({ truck: { x: tx, y: ty }, garage: { x: gx, y: gy } }) => {
+        lines[ty * 2][tx * 2] = lines[ty * 2][tx * 2] + 'T';
+        lines[gy * 2][gx * 2] = lines[gy * 2][gx * 2] + 'G';
+      }
+    );
+  }
   lines.forEach((line) => {
     let lineStr = ' ';
     for (let i = 0; i < line.length; i++) {
-      if (i > 0 && ('' + line[i]).length <= 1) {
+      lineStr += line[i];
+      if (('' + line[i]).length <= 1) {
         // We want things spaced a bit for visual clarity but we want to make sure bridges don't have a bunch of gaps in them
-        if (line[i - 1] === line[i]) {
+        if (i < line.length - 1 && line[i + 1] === line[i]) {
           lineStr += line[i];
         } else {
           lineStr += ' ';
         }
       }
-      lineStr += line[i];
     }
     console.log(lineStr);
   });

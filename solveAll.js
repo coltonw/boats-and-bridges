@@ -45,7 +45,12 @@ levelsToInclude.forEach((level, i) => {
         if (hAlready[h]) {
           return;
         }
-        heuristicsUsed[h] = heuristicsUsed[h] ? heuristicsUsed[h] + 1 : 1;
+        if (heuristicsUsed[h]) {
+          heuristicsUsed[h] = heuristicsUsed[h] + 1;
+        } else {
+          heuristicsUsed[h] = 1;
+          console.log(`First use of "${h}"`);
+        }
         hAlready[h] = true;
       });
     }

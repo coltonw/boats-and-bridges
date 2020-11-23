@@ -321,6 +321,43 @@ const getConnectedIslands = (level, startingIsland) => {
   return visited;
 };
 
+const doubleConnectedAdjacentIslands = (level, island) => {
+  const result = [];
+  level.islands.forEach((i) => {
+    if (
+      adjacent(level, i, island) &&
+      (bridgeBetween(level, i, island) || { n: 0 }).n > 1
+    ) {
+      result.push(i);
+    }
+  });
+  return result;
+};
+
+const doubleConnected = (level, island1, island2) => {
+  const traversingStack = [island1];
+  const visited = [island1];
+
+  let isConnected = false;
+  while (traversingStack.length > 0) {
+    const island = traversingStack.pop();
+    const connected = doubleConnectedAdjacentIslands(level, island);
+    forEach(connected, (cI) => {
+      if (cI.x === island2.x && cI.y === island2.y) {
+        isConnected = true;
+        return false;
+      }
+      if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
+        visited.push(cI);
+        if (!cI.b || cI.b > 3) {
+          traversingStack.unshift(cI);
+        }
+      }
+    });
+  }
+  return isConnected;
+};
+
 const fullyConnected = (level) => {
   const connectedIslands = getConnectedIslands(level, level.islands[0]);
   return connectedIslands.length === level.islands.length;
@@ -336,6 +373,20 @@ const allBoatsDocked = (level) => {
       }
     });
     return !blockedBoat;
+  }
+  return true;
+};
+
+const allTrucksGaraged = (level) => {
+  if (level.trucks) {
+    let stuckTruck = false;
+    forEach(level.trucks, ({ truck, garage }) => {
+      if (!doubleConnected(level, truck, garage)) {
+        stuckTruck = true;
+        return false;
+      }
+    });
+    return !stuckTruck;
   }
   return true;
 };
@@ -358,7 +409,12 @@ const noBoatPirated = (level) => {
 };
 
 const validated = (level) => {
-  return fullyConnected(level) && allBoatsDocked(level) && noBoatPirated(level);
+  return (
+    fullyConnected(level) &&
+    allBoatsDocked(level) &&
+    allTrucksGaraged(level) &&
+    noBoatPirated(level)
+  );
 };
 
 // water coordinates are to the bottom right of island coordinates
@@ -701,10 +757,63 @@ const getPossiblyConnectedIslands = (level, startingIsland, exclude = []) => {
   while (traversingStack.length > 0) {
     const island = traversingStack.pop();
     const connected = possiblyConnectedIslands(level, island, exclude);
+    // we only want to exclude an island on the first pass. It is fine to connect to from another angle.
+    exclude = [];
     connected.forEach((cI) => {
       if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
         visited.push(cI);
         if (!cI.b || cI.b > 1) {
+          traversingStack.unshift(cI);
+        }
+      }
+    });
+  }
+  return visited;
+};
+
+const possiblyDoubleConnectedAdjacentIslands = (
+  level,
+  island,
+  exclude = []
+) => {
+  const result = [];
+  level.islands.forEach((i) => {
+    if (exclude.find((e) => i.x === e.x && i.y === e.y)) {
+      return true;
+    }
+    if (
+      adjacent(level, i, island) &&
+      possibleConnections(level, i, island) +
+        (bridgeBetween(level, i, island) || { n: 0 }).n >
+        1
+    ) {
+      result.push(i);
+    }
+  });
+  return result;
+};
+
+const getPossiblyDoubleConnectedIslands = (
+  level,
+  startingIsland,
+  exclude = []
+) => {
+  const traversingStack = [startingIsland];
+  const visited = [startingIsland];
+
+  while (traversingStack.length > 0) {
+    const island = traversingStack.pop();
+    const connected = possiblyDoubleConnectedAdjacentIslands(
+      level,
+      island,
+      exclude
+    );
+    // we only want to exclude an island on the first pass. It is fine to connect to from another angle.
+    exclude = [];
+    connected.forEach((cI) => {
+      if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
+        visited.push(cI);
+        if (!cI.b || cI.b > 3) {
           traversingStack.unshift(cI);
         }
       }
@@ -785,6 +894,7 @@ module.exports = {
   allBridgePossibilities,
   clear,
   getPossiblyConnectedIslands,
+  getPossiblyDoubleConnectedIslands,
   connectedByWater,
   getMustConnectWater,
   connectedOutside,

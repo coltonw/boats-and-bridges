@@ -17,13 +17,6 @@ levels:
     #   y: 0,
     #   n: 1, // n is number of bridges here (must be 1 or 2)
     bridgesV: []
-    trucks:
-      - truck:
-          x: 0
-          y: 0
-        garage:
-          x: 1
-          y: 0
   - name: How to win
     islands:
       - x: 0

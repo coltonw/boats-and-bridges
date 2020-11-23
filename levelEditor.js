@@ -18,10 +18,11 @@ const level = storedLevel || {
   bridgesV: [],
   boats: [],
   pirates: [],
+  trucks: [],
 };
 
-// Temporary
-level.pirates = level.pirates || [];
+// temporary
+level.trucks = level.trucks || [];
 
 let showBridges = true;
 
@@ -52,6 +53,7 @@ const loadYaml = () => {
     level.islands = levelYaml.islands || [];
     level.boats = levelYaml.boats || [];
     level.pirates = levelYaml.pirates || [];
+    level.trucks = levelYaml.trucks || [];
   } catch (e) {
     console.log(e);
   }
@@ -259,6 +261,35 @@ const renderLevel = () => {
 
     levelElement.appendChild(boatEl);
   });
+
+  level.trucks.forEach(({ truck, garage }) => {
+    if (truck) {
+      const truckEl = document.createElement('div');
+      truckEl.setAttribute('class', 'truck');
+      truckEl.setAttribute(
+        'style',
+        `left: ${(levelElement.offsetWidth / scale) * truck.x}px; top: ${
+          (levelElement.offsetHeight / scale) * truck.y
+        }px;`
+      );
+
+      truckEl.innerHTML = '🚚';
+      levelElement.appendChild(truckEl);
+    }
+    if (garage) {
+      const garageEl = document.createElement('div');
+      garageEl.setAttribute('class', 'garage');
+      garageEl.setAttribute(
+        'style',
+        `left: ${(levelElement.offsetWidth / scale) * garage.x}px; top: ${
+          (levelElement.offsetHeight / scale) * garage.y
+        }px;`
+      );
+
+      garageEl.innerHTML = '🏭';
+      levelElement.appendChild(garageEl);
+    }
+  });
 };
 
 const deleteIsland = ({ x, y }) => {
@@ -269,6 +300,8 @@ const deleteIsland = ({ x, y }) => {
     }
   }
 };
+
+let nextClick = null;
 
 levelElement.onclick = (ev) => {
   let offsetX = ev.offsetX;
@@ -281,7 +314,21 @@ levelElement.onclick = (ev) => {
   }
   const xScaled = (offsetX / levelElement.offsetWidth) * scale;
   const yScaled = (offsetY / levelElement.offsetHeight) * scale;
-  if (
+  if (nextClick === 'truck' || nextClick === 'garage') {
+    const x = Math.floor(xScaled);
+    const y = Math.floor(yScaled);
+    const truckObj = level.trucks.find((t) => !t[nextClick]);
+    if (truckObj) {
+      truckObj[nextClick] = { x, y };
+    } else if (nextClick === 'truck') {
+      level.trucks.push({ truck: { x, y }, garage: null });
+    } else {
+      level.trucks.push({ truck: null, garage: { x, y } });
+    }
+    nextClick = null;
+    const infoEl = document.getElementById('info');
+    infoEl.innerText = '';
+  } else if (
     Math.abs(0.5 - (xScaled % 1)) > 0.25 &&
     Math.abs(0.5 - (yScaled % 1)) > 0.25
   ) {
@@ -347,7 +394,41 @@ levelElement.onauxclick = function (ev) {
   }
   const xScaled = (offsetX / levelElement.offsetWidth) * scale;
   const yScaled = (offsetY / levelElement.offsetHeight) * scale;
-  if (
+  if (nextClick === 'truck' || nextClick === 'garage') {
+    const x = Math.floor(xScaled);
+    const y = Math.floor(yScaled);
+    const garageToDelete = level.trucks.find(
+      ({ garage }) => garage && garage.x === x && garage.y === y
+    );
+    const truckToDelete = level.trucks.find(
+      ({ truck }) => truck && truck.x === x && truck.y === y
+    );
+    let truckDeleted = false;
+    if (nextClick === 'garage' && garageToDelete) {
+      truckDeleted = true;
+      if (!garageToDelete.truck) {
+        garageToDelete.delete = true;
+      } else {
+        garageToDelete.garage = null;
+      }
+    } else if (nextClick === 'truck' && truckToDelete) {
+      truckDeleted = true;
+      if (!truckToDelete.garage) {
+        truckToDelete.delete = true;
+      } else {
+        truckToDelete.truck = null;
+      }
+    }
+    for (let i = 0; i < level.trucks.length; i++) {
+      if (level.trucks[i].delete) {
+        level.trucks.splice(i, 1);
+        break;
+      }
+    }
+    nextClick = null;
+    const infoEl = document.getElementById('info');
+    infoEl.innerText = '';
+  } else if (
     Math.abs(0.5 - (xScaled % 1)) > 0.25 &&
     Math.abs(0.5 - (yScaled % 1)) > 0.25
   ) {
@@ -415,6 +496,19 @@ levelElement.onauxclick = function (ev) {
 
 levelElement.oncontextmenu = function (ev) {
   ev.preventDefault();
+};
+
+document.onkeydown = (e) => {
+  if (e.key === 't') {
+    const infoEl = document.getElementById('info');
+    nextClick = 'truck';
+    infoEl.innerText = 'Placing truck...';
+  }
+  if (e.key === 'g') {
+    const infoEl = document.getElementById('info');
+    nextClick = 'garage';
+    infoEl.innerText = 'Placing garage...';
+  }
 };
 
 const resetButtonEl = document.getElementById('reset');

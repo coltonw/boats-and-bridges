@@ -17,6 +17,10 @@ body {
   width: 900px;
 }
 
+#info {
+  padding-left: 20px;
+}
+
 button {
   margin: 20px 10px;
 }
@@ -146,6 +150,13 @@ button:first-of-type {
     black 5px
   );
   background-color: #855e42;
+}
+
+.truck,
+.garage {
+  position: absolute;
+  padding-left: 4px;
+  padding-top: 16px;
 }
 
 #yaml {

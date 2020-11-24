@@ -12,6 +12,7 @@ const {
   validated,
   getPossiblyConnectedIslands,
   getPossiblyDoubleConnectedIslands,
+  getPossiblyDoubleConnectedIslandsAdvanced,
   connectedByWater,
   getMustConnectWater,
   connectedOutside,
@@ -619,7 +620,7 @@ const noPiratedBoatsOutsidePreventBridgeHeuristic = (
 
 // 1. Must double connect or the truck is stranded:
 //    T = X   X = G   Where T and G CANNOT double connect via any other links
-const noStrandedTrucksHeuristic = (level, island) => {
+const noStrandedTrucksHeuristic = (advanced) => (level, island) => {
   if (!level.trucks) {
     return false;
   }
@@ -632,9 +633,11 @@ const noStrandedTrucksHeuristic = (level, island) => {
       bridge.n < 2
     ) {
       const adjacentIsland = level.islands[i];
-      const doubleIslands = getPossiblyDoubleConnectedIslands(level, island, [
-        adjacentIsland,
-      ]);
+      const doubleIslands = advanced
+        ? getPossiblyDoubleConnectedIslandsAdvanced(level, island, [
+            adjacentIsland,
+          ])
+        : getPossiblyDoubleConnectedIslands(level, island, [adjacentIsland]);
       let stranded = false;
       forEach(level.trucks, ({ truck, garage }) => {
         const hasTruck = !!doubleIslands.find(
@@ -1230,16 +1233,17 @@ const heuristics = [
   noStrandedIslandsAdvanced1Heuristic, // 13
   noStrandedIslandsAdvanced2Heuristic, // 14
   onlyChoicesNoBlockedBoatsHeuristic, // 15
-  noStrandedTrucksHeuristic, // 16
-  noStrandedIslandsAdvanced3Heuristic(false), // 17
-  noStrandedIslandsAdvanced3Heuristic(true), // 18
-  unfillableIslandPigeonholeHeuristic(false), // 19
-  unfillableIslandPigeonholeHeuristic(true), // 20
-  noBlockedBoatsPigeonholeHeuristic(false), // 21
-  noBlockedBoatsPigeonholeHeuristic(true), // 22
-  evenOrOddQuestion, // 23
-  guessAndCheck(false), // 24
-  guessAndCheck(true), // 25
+  noStrandedTrucksHeuristic(false), // 16
+  noStrandedTrucksHeuristic(true), // 17
+  noStrandedIslandsAdvanced3Heuristic(false), // 18
+  noStrandedIslandsAdvanced3Heuristic(true), // 19
+  unfillableIslandPigeonholeHeuristic(false), // 20
+  unfillableIslandPigeonholeHeuristic(true), // 21
+  noBlockedBoatsPigeonholeHeuristic(false), // 22
+  noBlockedBoatsPigeonholeHeuristic(true), // 23
+  evenOrOddQuestion, // 24
+  guessAndCheck(false), // 25
+  guessAndCheck(true), // 26
 ];
 
 const getIslandData = (level, island, levelData, recalc) => {
@@ -1422,7 +1426,7 @@ const fastHeuristics = [
   noStrandedIslandsAdvanced1Heuristic,
   noStrandedIslandsAdvanced2Heuristic,
   noStrandedIslandsAdvanced3Heuristic(true),
-  noStrandedTrucksHeuristic,
+  noStrandedTrucksHeuristic(true),
   unfillableIslandPigeonholeHeuristic(true),
   evenOrOddQuestion,
   noBlockedBoatsHeuristic,

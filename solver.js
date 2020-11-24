@@ -412,7 +412,9 @@ const boatsConnectedOutside = (level, island, islandData) => {
     level.boatConnectedOutside ||
     level.pirateConnectedOutside ||
     !level.pirates ||
-    !level.boats
+    !level.boats ||
+    level.pirates.length === 0 ||
+    level.boats.length === 0
   ) {
     return false;
   }
@@ -444,7 +446,9 @@ const boatMustConnectOutside = (level, island, islandData) => {
     level.boatConnectedOutside ||
     level.pirateConnectedOutside ||
     !level.pirates ||
-    !level.boats
+    !level.boats ||
+    level.pirates.length === 0 ||
+    level.boats.length === 0
   ) {
     return false;
   }
@@ -1409,22 +1413,23 @@ solve.hasMultipleSolutions = (level, quiet = false, maxDepth = 8) => {
 };
 
 const fastHeuristics = [
-  onlyChoiceSimpleHeuristic, // 0
-  onlyChoiceHeuristic, // 1
-  onlyChoicesHeuristic, // 2
-  moreBridgesThanChoicesHeuristic, // 3
-  noStrandedIslandsSimpleHeuristic, // 4
-  pigeonholeHeuristic, // 5
-  noStrandedIslandsAdvanced1Heuristic, // 6
-  noStrandedIslandsAdvanced2Heuristic, // 7
-  noStrandedIslandsAdvanced3Heuristic(true), // 8
-  unfillableIslandPigeonholeHeuristic(true), // 9
-  evenOrOddQuestion, // 10
-  noBlockedBoatsHeuristic, // 11
-  onlyChoicesNoBlockedBoatsHeuristic, // 12
-  noBlockedBoatsPigeonholeHeuristic(true), // 13
-  noPiratedBoatsHeuristic, // 14
-  noPiratedBoatsPreventBridgeHeuristic, // 15
+  onlyChoiceSimpleHeuristic,
+  onlyChoiceHeuristic,
+  onlyChoicesHeuristic,
+  moreBridgesThanChoicesHeuristic,
+  noStrandedIslandsSimpleHeuristic,
+  pigeonholeHeuristic,
+  noStrandedIslandsAdvanced1Heuristic,
+  noStrandedIslandsAdvanced2Heuristic,
+  noStrandedIslandsAdvanced3Heuristic(true),
+  noStrandedTrucksHeuristic,
+  unfillableIslandPigeonholeHeuristic(true),
+  evenOrOddQuestion,
+  noBlockedBoatsHeuristic,
+  onlyChoicesNoBlockedBoatsHeuristic,
+  noBlockedBoatsPigeonholeHeuristic(true),
+  noPiratedBoatsHeuristic,
+  noPiratedBoatsPreventBridgeHeuristic,
 ];
 
 const fastSolveInner = (level) => {

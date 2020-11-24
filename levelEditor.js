@@ -586,6 +586,17 @@ compressEl.onclick = (ev) => {
     island.y = island.y - yCompress[island.y];
   });
 
+  level.trucks.forEach(({ truck, garage }) => {
+    if (truck) {
+      truck.x = truck.x - xCompress[truck.x];
+      truck.y = truck.y - yCompress[truck.y];
+    }
+    if (garage) {
+      garage.x = garage.x - xCompress[garage.x];
+      garage.y = garage.y - yCompress[garage.y];
+    }
+  });
+
   level.boats.forEach(({ boat, dock }) => {
     if (boat) {
       boat.x = boat.x - xCompress[boat.x];

@@ -1277,6 +1277,107 @@ levels:
         garage:
           x: 1
           'y': 0
+  - name: Two Tough Truck Paths
+    islands:
+      - x: 5
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 7
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 11
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 5
+        'y': 1
+        b: 5
+        'n': 0
+      - x: 7
+        'y': 1
+        b: 7
+        'n': 0
+      - x: 10
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 6
+        'y': 2
+        b: 1
+        'n': 0
+      - x: 7
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 8
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 9
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 10
+        'y': 2
+        b: 5
+        'n': 0
+      - x: 11
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 5
+        'y': 3
+        b: 5
+        'n': 0
+      - x: 6
+        'y': 3
+        b: 5
+        'n': 0
+      - x: 8
+        'y': 3
+        b: 1
+        'n': 0
+      - x: 5
+        'y': 4
+        b: 2
+        'n': 0
+      - x: 6
+        'y': 4
+        b: 5
+        'n': 0
+      - x: 7
+        'y': 4
+        b: 6
+        'n': 0
+      - x: 9
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 6
+        'y': 6
+        b: 1
+        'n': 0
+      - x: 7
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 10
+        'y': 6
+        b: 2
+        'n': 0
+    boats: []
+    bridgesH: []
+    bridgesV: []
+    pirates: []
+    trucks:
+      - truck:
+          x: 7
+          'y': 0
+        garage:
+          x: 7
+          'y': 6
   - name: Five Questions
     islands:
       - x: 2

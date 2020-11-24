@@ -776,7 +776,8 @@ const possiblyDoubleConnectedAdjacentIslands = (
   island,
   exclude = []
 ) => {
-  const result = [];
+  const passThroughs = [];
+  const deadEnds = [];
   level.islands.forEach((i) => {
     if (exclude.find((e) => i.x === e.x && i.y === e.y)) {
       return true;
@@ -787,10 +788,19 @@ const possiblyDoubleConnectedAdjacentIslands = (
         (bridgeBetween(level, i, island) || { n: 0 }).n >
         1
     ) {
-      result.push(i);
+      if (i.b && i.b < 4) {
+        deadEnds.push(i);
+      } else {
+        const numConnected = connectedIslands(level, i).length;
+        if (i.b && i.b < numConnected + 2) {
+          deadEnds.push(i);
+        } else {
+          passThroughs.push(i);
+        }
+      }
     }
   });
-  return result;
+  return [passThroughs, deadEnds];
 };
 
 const getPossiblyDoubleConnectedIslands = (
@@ -803,19 +813,22 @@ const getPossiblyDoubleConnectedIslands = (
 
   while (traversingStack.length > 0) {
     const island = traversingStack.pop();
-    const connected = possiblyDoubleConnectedAdjacentIslands(
+    const [passThroughs, deadEnds] = possiblyDoubleConnectedAdjacentIslands(
       level,
       island,
       exclude
     );
     // we only want to exclude an island on the first pass. It is fine to connect to from another angle.
     exclude = [];
-    connected.forEach((cI) => {
+    passThroughs.forEach((cI) => {
       if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
         visited.push(cI);
-        if (!cI.b || cI.b > 3) {
-          traversingStack.unshift(cI);
-        }
+        traversingStack.unshift(cI);
+      }
+    });
+    deadEnds.forEach((cI) => {
+      if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
+        visited.push(cI);
       }
     });
   }

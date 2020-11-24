@@ -1230,9 +1230,9 @@ const heuristics = [
   noStrandedIslandsAdvanced1Heuristic, // 13
   noStrandedIslandsAdvanced2Heuristic, // 14
   onlyChoicesNoBlockedBoatsHeuristic, // 15
-  noStrandedIslandsAdvanced3Heuristic(false), // 16
-  noStrandedIslandsAdvanced3Heuristic(true), // 17
-  noStrandedTrucksHeuristic, // 18
+  noStrandedTrucksHeuristic, // 16
+  noStrandedIslandsAdvanced3Heuristic(false), // 17
+  noStrandedIslandsAdvanced3Heuristic(true), // 18
   unfillableIslandPigeonholeHeuristic(false), // 19
   unfillableIslandPigeonholeHeuristic(true), // 20
   noBlockedBoatsPigeonholeHeuristic(false), // 21

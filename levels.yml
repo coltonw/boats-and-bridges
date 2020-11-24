@@ -1277,106 +1277,233 @@ levels:
         garage:
           x: 1
           'y': 0
-  - name: Two Tough Truck Paths
+  - name: Two Truck Paths
     islands:
-      - x: 5
+      - x: 0
         'y': 0
         b: 2
         'n': 0
-      - x: 7
+      - x: 2
         'y': 0
         b: 4
         'n': 0
-      - x: 11
+      - x: 6
         'y': 0
         b: 3
         'n': 0
-      - x: 5
+      - x: 0
         'y': 1
         b: 5
         'n': 0
-      - x: 7
+      - x: 2
         'y': 1
         b: 7
         'n': 0
-      - x: 10
+      - x: 5
         'y': 1
         b: 4
         'n': 0
-      - x: 6
+      - x: 1
         'y': 2
         b: 1
         'n': 0
-      - x: 7
+      - x: 2
         'y': 2
         b: 3
         'n': 0
-      - x: 8
+      - x: 3
         'y': 2
         b: 3
         'n': 0
-      - x: 9
+      - x: 4
         'y': 2
         b: 4
         'n': 0
-      - x: 10
+      - x: 5
         'y': 2
         b: 5
         'n': 0
-      - x: 11
+      - x: 6
         'y': 2
         b: 3
         'n': 0
-      - x: 5
+      - x: 0
         'y': 3
         b: 5
         'n': 0
-      - x: 6
+      - x: 1
         'y': 3
         b: 5
         'n': 0
-      - x: 8
+      - x: 3
         'y': 3
         b: 1
         'n': 0
-      - x: 5
+      - x: 0
         'y': 4
         b: 2
         'n': 0
-      - x: 6
+      - x: 1
         'y': 4
         b: 5
         'n': 0
-      - x: 7
+      - x: 2
         'y': 4
         b: 6
         'n': 0
-      - x: 9
+      - x: 4
         'y': 4
         b: 4
         'n': 0
-      - x: 6
-        'y': 6
+      - x: 1
+        'y': 5
         b: 1
         'n': 0
-      - x: 7
-        'y': 6
+      - x: 2
+        'y': 5
         b: 3
         'n': 0
-      - x: 10
-        'y': 6
+      - x: 5
+        'y': 5
         b: 2
         'n': 0
-    boats: []
     bridgesH: []
     bridgesV: []
+    boats: []
     pirates: []
     trucks:
       - truck:
-          x: 7
+          x: 2
           'y': 0
         garage:
-          x: 7
+          x: 2
+          'y': 5
+  - name: Boats and Trucks
+    islands:
+      - x: 0
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 0
+        b: 6
+        'n': 0
+      - x: 4
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 5
+        'y': 0
+        b: 1
+        'n': 0
+      - x: 1
+        'y': 1
+        b: 1
+        'n': 0
+      - x: 3
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 0
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 2
+        b: 5
+        'n': 0
+      - x: 2
+        'y': 2
+        b: 5
+        'n': 0
+      - x: 3
+        'y': 2
+        b: 5
+        'n': 0
+      - x: 4
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 5
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 4
+        b: 7
+        'n': 0
+      - x: 3
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 4
+        b: 5
+        'n': 0
+      - x: 5
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 5
+        b: 2
+        'n': 0
+      - x: 2
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 6
+        b: 2
+        'n': 0
+      - x: 2
+        'y': 6
+        b: 2
+        'n': 0
+      - x: 4
+        'y': 6
+        b: 4
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 2
+          'y': 3
+        dock:
+          x: 0
+          'y': 2
+    pirates: []
+    trucks:
+      - truck:
+          x: 0
+          'y': 0
+        garage:
+          x: 2
           'y': 6
   - name: Five Questions
     islands:

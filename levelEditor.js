@@ -517,6 +517,7 @@ resetButtonEl.onclick = (ev) => {
   level.islands = [];
   level.boats = [];
   level.pirates = [];
+  level.trucks = [];
   save();
   run();
 };

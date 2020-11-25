@@ -663,14 +663,15 @@ const noStrandedTrucksHeuristic = (advanced) => (level, island) => {
   return found;
 };
 
-// TODO:::::
-// Stranded island heuristic:
+// TODO: This is theoretically possible but I have yet to make a level
+// that requires it so I haven't coded it up yet
+// Stranded truck max bridge heuristic:
 // 2. Must max bridge or stranded:
-//    A - A
+//    A = A
 //
-//    X   X - B
-//    |       |
-//    B - B - B   Where A and B CANNOT connect via any other links
+//    X   X = B
+//    ║       ║
+//    B = B = B   Where A and B CANNOT double connect via any other links
 const noStrandedTrucksMaxBridgeHeuristic = (level, island, islandData) => {
   const { adjacentIslands } = islandData;
 
@@ -1226,15 +1227,15 @@ const heuristics = [
   pigeonholeHeuristic, // 6
   noPiratedBoatsHeuristic, // 7
   noPiratedBoatsPreventBridgeHeuristic, // 8
-  boatsConnectedOutside, // 9
-  boatMustConnectOutside, // 10
-  noPiratedBoatsOutsideHeuristic, // 11
-  noPiratedBoatsOutsidePreventBridgeHeuristic, // 12
-  noStrandedIslandsAdvanced1Heuristic, // 13
-  noStrandedIslandsAdvanced2Heuristic, // 14
-  onlyChoicesNoBlockedBoatsHeuristic, // 15
-  noStrandedTrucksHeuristic(false), // 16
-  noStrandedTrucksHeuristic(true), // 17
+  noStrandedTrucksHeuristic(false), // 9
+  noStrandedTrucksHeuristic(true), // 10
+  boatsConnectedOutside, // 11
+  boatMustConnectOutside, // 12
+  noPiratedBoatsOutsideHeuristic, // 13
+  noPiratedBoatsOutsidePreventBridgeHeuristic, // 14
+  noStrandedIslandsAdvanced1Heuristic, // 15
+  noStrandedIslandsAdvanced2Heuristic, // 16
+  onlyChoicesNoBlockedBoatsHeuristic, // 17
   noStrandedIslandsAdvanced3Heuristic(false), // 18
   noStrandedIslandsAdvanced3Heuristic(true), // 19
   unfillableIslandPigeonholeHeuristic(false), // 20

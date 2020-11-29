@@ -626,29 +626,48 @@ const noStrandedTrucksHeuristic = (advanced) => (level, island) => {
   }
   let found = false;
   for (let i = 0; i < level.islands.length; i++) {
-    const bridge = bridgeBetween(level, island, level.islands[i]) || { n: 0 };
+    const adjacentIsland = level.islands[i];
+    let bridge = bridgeBetween(level, island, level.islands[i]);
+    if (!bridge) {
+      bridge =
+        island.x === adjacentIsland.x
+          ? {
+              n: 0,
+              x: island.x,
+              y0: Math.min(island.y, adjacentIsland.y),
+              y1: Math.max(island.y, adjacentIsland.y),
+            }
+          : {
+              n: 0,
+              x0: Math.min(island.x, adjacentIsland.x),
+              x1: Math.max(island.x, adjacentIsland.x),
+              y: island.y,
+            };
+    }
     if (
-      adjacent(level, island, level.islands[i]) &&
-      possibleConnections(level, island, level.islands[i]) + bridge.n > 1 &&
+      adjacent(level, island, adjacentIsland) &&
+      possibleConnections(level, island, adjacentIsland) + bridge.n > 1 &&
       bridge.n < 2
     ) {
-      const adjacentIsland = level.islands[i];
-      const doubleIslands = advanced
-        ? getPossiblyDoubleConnectedIslandsAdvanced(level, island, [
-            adjacentIsland,
-          ])
-        : getPossiblyDoubleConnectedIslands(level, island, [adjacentIsland]);
       let stranded = false;
       forEach(level.trucks, ({ truck, garage }) => {
-        const hasTruck = !!doubleIslands.find(
-          ({ x, y }) => x === truck.x && y === truck.y
-        );
+        const doubleIslands = advanced
+          ? getPossiblyDoubleConnectedIslandsAdvanced(
+              level,
+              level.islands.find((is) => truck.x === is.x && truck.y === is.y),
+              [bridge]
+            )
+          : getPossiblyDoubleConnectedIslands(
+              level,
+              level.islands.find((is) => truck.x === is.x && truck.y === is.y),
+              [bridge]
+            );
         const hasGarage = !!doubleIslands.find(
           ({ x, y }) => x === garage.x && y === garage.y
         );
         // We assume the level is solvable.
         // if the level is not solveable, it is possible that this will always be true and will result in lots and lots of bridges...
-        if (hasTruck !== hasGarage) {
+        if (!hasGarage) {
           stranded = true;
           return false;
         }
@@ -656,6 +675,7 @@ const noStrandedTrucksHeuristic = (advanced) => (level, island) => {
       if (stranded) {
         addBridge(level, island, adjacentIsland, 2 - bridge.n);
         found = true;
+        break;
       }
     }
   }
@@ -663,8 +683,6 @@ const noStrandedTrucksHeuristic = (advanced) => (level, island) => {
   return found;
 };
 
-// TODO: This is theoretically possible but I have yet to make a level
-// that requires it so I haven't coded it up yet
 // Stranded truck max bridge heuristic:
 // 2. Must max bridge or stranded:
 //    A = A
@@ -680,9 +698,23 @@ const noStrandedTrucksMaxBridgeHeuristic = (level, island, islandData) => {
     const maxAmount = bridgeBetween(level, island, adjacentIsland)
       ? 1
       : possibleConnections(level, island, adjacentIsland) - 1;
+    // TODO: this could possibly be stronger and check if a double max bridge is needed?
     addBridge(level, island, adjacentIsland);
-    const connectedIslands = getPossiblyDoubleConnectedIslands(level, island);
-    if (connectedIslands.length < level.islands.length) {
+    let stranded = false;
+    forEach(level.trucks, ({ truck, garage }) => {
+      const doubleIslands = getPossiblyDoubleConnectedIslandsAdvanced(
+        level,
+        level.islands.find((is) => truck.x === is.x && truck.y === is.y)
+      );
+      const hasGarage = !!doubleIslands.find(
+        ({ x, y }) => x === garage.x && y === garage.y
+      );
+      if (!hasGarage) {
+        stranded = true;
+        return false;
+      }
+    });
+    if (stranded) {
       const changed = addMaxBridge(level, island, adjacentIsland, maxAmount);
       found = found || changed;
     }
@@ -1229,22 +1261,23 @@ const heuristics = [
   noPiratedBoatsPreventBridgeHeuristic, // 8
   noStrandedTrucksHeuristic(false), // 9
   noStrandedTrucksHeuristic(true), // 10
-  boatsConnectedOutside, // 11
-  boatMustConnectOutside, // 12
-  noPiratedBoatsOutsideHeuristic, // 13
-  noPiratedBoatsOutsidePreventBridgeHeuristic, // 14
-  noStrandedIslandsAdvanced1Heuristic, // 15
-  noStrandedIslandsAdvanced2Heuristic, // 16
-  onlyChoicesNoBlockedBoatsHeuristic, // 17
-  noStrandedIslandsAdvanced3Heuristic(false), // 18
-  noStrandedIslandsAdvanced3Heuristic(true), // 19
-  unfillableIslandPigeonholeHeuristic(false), // 20
-  unfillableIslandPigeonholeHeuristic(true), // 21
-  noBlockedBoatsPigeonholeHeuristic(false), // 22
-  noBlockedBoatsPigeonholeHeuristic(true), // 23
-  evenOrOddQuestion, // 24
-  guessAndCheck(false), // 25
-  guessAndCheck(true), // 26
+  noStrandedTrucksMaxBridgeHeuristic, // 11
+  boatsConnectedOutside, // 12
+  boatMustConnectOutside, // 13
+  noPiratedBoatsOutsideHeuristic, // 14
+  noPiratedBoatsOutsidePreventBridgeHeuristic, // 15
+  noStrandedIslandsAdvanced1Heuristic, // 16
+  noStrandedIslandsAdvanced2Heuristic, // 17
+  onlyChoicesNoBlockedBoatsHeuristic, // 18
+  noStrandedIslandsAdvanced3Heuristic(false), // 19
+  noStrandedIslandsAdvanced3Heuristic(true), // 20
+  unfillableIslandPigeonholeHeuristic(false), // 21
+  unfillableIslandPigeonholeHeuristic(true), // 22
+  noBlockedBoatsPigeonholeHeuristic(false), // 23
+  noBlockedBoatsPigeonholeHeuristic(true), // 24
+  evenOrOddQuestion, // 25
+  guessAndCheck(false), // 26
+  guessAndCheck(true), // 27
 ];
 
 const getIslandData = (level, island, levelData, recalc) => {
@@ -1428,6 +1461,7 @@ const fastHeuristics = [
   noStrandedIslandsAdvanced2Heuristic,
   noStrandedIslandsAdvanced3Heuristic(true),
   noStrandedTrucksHeuristic(true),
+  noStrandedTrucksMaxBridgeHeuristic,
   unfillableIslandPigeonholeHeuristic(true),
   evenOrOddQuestion,
   noBlockedBoatsHeuristic,

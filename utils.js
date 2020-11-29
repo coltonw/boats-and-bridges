@@ -774,12 +774,22 @@ const getPossiblyConnectedIslands = (level, startingIsland, exclude = []) => {
 const possiblyDoubleConnectedAdjacentIslands = (
   level,
   island,
-  exclude = []
+  excludeBridges = []
 ) => {
   const result = [];
   level.islands.forEach((i) => {
-    if (exclude.find((e) => i.x === e.x && i.y === e.y)) {
-      return true;
+    if (
+      excludeBridges.find((b) =>
+        i.x === island.x
+          ? b.x === i.x &&
+            b.y0 === Math.min(i.y, island.y) &&
+            b.y1 === Math.max(i.y, island.y)
+          : b.x0 === Math.min(i.x, island.x) &&
+            b.x1 === Math.max(i.x, island.x) &&
+            b.y === i.y
+      )
+    ) {
+      return;
     }
     if (
       adjacent(level, i, island) &&
@@ -796,20 +806,18 @@ const possiblyDoubleConnectedAdjacentIslands = (
 const getPossiblyDoubleConnectedIslands = (
   level,
   startingIsland,
-  exclude = []
+  excludeBridges = []
 ) => {
   const traversingStack = [startingIsland];
-  const visited = [startingIsland];
+  let visited = [startingIsland];
 
   while (traversingStack.length > 0) {
     const island = traversingStack.pop();
     const connIslands = possiblyDoubleConnectedAdjacentIslands(
       level,
       island,
-      exclude
+      excludeBridges
     );
-    // we only want to exclude an island on the first pass. It is fine to connect to from another angle.
-    exclude = [];
     connIslands.forEach((cI) => {
       if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
         visited.push(cI);
@@ -825,13 +833,24 @@ const getPossiblyDoubleConnectedIslands = (
 const possiblyDoubleConnectedAdjacentIslandsAdvanced = (
   level,
   island,
-  exclude = []
+  excludeBridges = []
 ) => {
   const passThroughs = [];
+  const singles = [];
   const deadEnds = [];
   level.islands.forEach((i) => {
-    if (exclude.find((e) => i.x === e.x && i.y === e.y)) {
-      return true;
+    if (
+      excludeBridges.find((b) =>
+        i.x === island.x
+          ? b.x === i.x &&
+            b.y0 === Math.min(i.y, island.y) &&
+            b.y1 === Math.max(i.y, island.y)
+          : b.x0 === Math.min(i.x, island.x) &&
+            b.x1 === Math.max(i.x, island.x) &&
+            b.y === i.y
+      )
+    ) {
+      return;
     }
     if (
       adjacent(level, i, island) &&
@@ -850,42 +869,93 @@ const possiblyDoubleConnectedAdjacentIslandsAdvanced = (
           : connIslands.length + 1;
         if (i.b && i.b < numConnected + 2) {
           deadEnds.push(i);
+        } else if (i.b && i.b === numConnected + 2) {
+          singles.push(i);
         } else {
           passThroughs.push(i);
         }
       }
     }
   });
-  return [passThroughs, deadEnds];
+  return [passThroughs, singles, deadEnds];
 };
 
 const getPossiblyDoubleConnectedIslandsAdvanced = (
   level,
   startingIsland,
-  exclude = []
+  excludeBridges = []
 ) => {
   const traversingStack = [startingIsland];
-  const visited = [startingIsland];
+  const traversingSingles = [];
+  let visited = [startingIsland];
 
-  while (traversingStack.length > 0) {
-    const island = traversingStack.pop();
-    const [
-      passThroughs,
-      deadEnds,
-    ] = possiblyDoubleConnectedAdjacentIslandsAdvanced(level, island, exclude);
-    // we only want to exclude an island on the first pass. It is fine to connect to from another angle.
-    exclude = [];
-    passThroughs.forEach((cI) => {
-      if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
-        visited.push(cI);
-        traversingStack.unshift(cI);
-      }
-    });
-    deadEnds.forEach((cI) => {
-      if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
-        visited.push(cI);
-      }
-    });
+  while (traversingStack.length > 0 || traversingSingles.length > 0) {
+    if (traversingStack.length > 0) {
+      const island = traversingStack.pop();
+      const [
+        passThroughs,
+        singles,
+        deadEnds,
+      ] = possiblyDoubleConnectedAdjacentIslandsAdvanced(
+        level,
+        island,
+        excludeBridges
+      );
+      passThroughs.forEach((cI) => {
+        if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
+          visited.push(cI);
+          traversingStack.unshift(cI);
+        }
+      });
+      singles.forEach((cI) => {
+        if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
+          visited.push(cI);
+          traversingSingles.unshift(cI);
+        }
+      });
+      deadEnds.forEach((cI) => {
+        if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
+          visited.push(cI);
+        }
+      });
+    } else {
+      const island = traversingSingles.pop();
+      const [
+        passThroughs,
+        singles,
+        deadEnds,
+      ] = possiblyDoubleConnectedAdjacentIslandsAdvanced(
+        level,
+        island,
+        excludeBridges
+      );
+      passThroughs.forEach((cI) => {
+        if (
+          !visited.find((i) => i.x === cI.x && i.y === cI.y) &&
+          bridgeBetween(level, island, cI)
+        ) {
+          visited.push(cI);
+          traversingStack.unshift(cI);
+        }
+      });
+      singles.forEach((cI) => {
+        if (
+          !visited.find((i) => i.x === cI.x && i.y === cI.y) &&
+          bridgeBetween(level, island, cI)
+        ) {
+          visited.push(cI);
+          traversingSingles.unshift(cI);
+        }
+      });
+      deadEnds.forEach((cI) => {
+        if (
+          !visited.find((i) => i.x === cI.x && i.y === cI.y) &&
+          bridgeBetween(level, island, cI)
+        ) {
+          visited.push(cI);
+        }
+      });
+    }
   }
   return visited;
 };

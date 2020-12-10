@@ -147,6 +147,52 @@ const onlyChoicesHeuristic = (level, island, islandData) => {
   return false;
 };
 
+// If a one only has a single non-one next to it, it must connect to that
+const onesImmediateHeuristic = (level, island, islandData) => {
+  if (island.b !== 1) {
+    return false;
+  }
+  const { adjacentIslands } = islandData;
+
+  let onlyBig = null;
+  let multipleBig = false;
+  adjacentIslands.forEach((adjacentIsland) => {
+    if (adjacentIsland.b !== 1) {
+      if (onlyBig) {
+        multipleBig = true;
+      }
+      onlyBig = adjacentIsland;
+    }
+  });
+  if (onlyBig && !multipleBig) {
+    addBridge(level, island, onlyBig, 1);
+    return true;
+  }
+  return false;
+};
+
+// If 2s connect to 2 islands and one of them is a 2, they must connect to the other one.
+const twosImmediateHeuristic = (level, island, islandData) => {
+  if (island.b !== 2 || island.n > 0) {
+    return false;
+  }
+  const { adjacentIslands } = islandData;
+  let found = false;
+
+  if (adjacentIslands.length === 2) {
+    // if one island is 2, add a bridge to the other island
+    if (adjacentIslands[0].b === 2) {
+      addBridge(level, island, adjacentIslands[1], 1);
+      found = true;
+    }
+    if (adjacentIslands[1].b === 2) {
+      addBridge(level, island, adjacentIslands[0], 1);
+      found = true;
+    }
+  }
+  return found;
+};
+
 // Right now this is simple.  It just adds max bridges.
 // it may be possible to generalize this but for now this just works for 2s next to each other and 1s next to each other
 const noStrandedIslandsSimpleHeuristic = (level, island, islandData) => {
@@ -1253,31 +1299,33 @@ const heuristics = [
   onlyChoiceSimpleHeuristic, // 0
   onlyChoiceHeuristic, // 1
   onlyChoicesHeuristic, // 2
-  moreBridgesThanChoicesHeuristic, // 3 (swapped with 4)
-  noStrandedIslandsSimpleHeuristic, // 4 (swapped with 3)
-  noBlockedBoatsHeuristic, // 5
-  pigeonholeHeuristic, // 6
-  noPiratedBoatsHeuristic, // 7
-  noPiratedBoatsPreventBridgeHeuristic, // 8
-  noStrandedTrucksHeuristic(false), // 9
-  noStrandedTrucksHeuristic(true), // 10
-  noStrandedTrucksMaxBridgeHeuristic, // 11
-  boatsConnectedOutside, // 12
-  boatMustConnectOutside, // 13
-  noPiratedBoatsOutsideHeuristic, // 14
-  noPiratedBoatsOutsidePreventBridgeHeuristic, // 15
-  noStrandedIslandsAdvanced1Heuristic, // 16
-  noStrandedIslandsAdvanced2Heuristic, // 17
-  onlyChoicesNoBlockedBoatsHeuristic, // 18
-  noStrandedIslandsAdvanced3Heuristic(false), // 19
-  noStrandedIslandsAdvanced3Heuristic(true), // 20
-  unfillableIslandPigeonholeHeuristic(false), // 21
-  unfillableIslandPigeonholeHeuristic(true), // 22
-  noBlockedBoatsPigeonholeHeuristic(false), // 23
-  noBlockedBoatsPigeonholeHeuristic(true), // 24
-  evenOrOddQuestion, // 25
-  guessAndCheck(false), // 26
-  guessAndCheck(true), // 27
+  moreBridgesThanChoicesHeuristic, // 3
+  onesImmediateHeuristic, // 4
+  twosImmediateHeuristic, // 5
+  noStrandedIslandsSimpleHeuristic, // 6
+  noBlockedBoatsHeuristic, // 7
+  pigeonholeHeuristic, // 8
+  noPiratedBoatsHeuristic, // 9
+  noPiratedBoatsPreventBridgeHeuristic, // 10
+  noStrandedTrucksHeuristic(false), // 11
+  noStrandedTrucksHeuristic(true), // 12
+  noStrandedTrucksMaxBridgeHeuristic, // 13
+  boatsConnectedOutside, // 14
+  boatMustConnectOutside, // 15
+  noPiratedBoatsOutsideHeuristic, // 16
+  noPiratedBoatsOutsidePreventBridgeHeuristic, // 17
+  noStrandedIslandsAdvanced1Heuristic, // 18
+  noStrandedIslandsAdvanced2Heuristic, // 19
+  onlyChoicesNoBlockedBoatsHeuristic, // 20
+  noStrandedIslandsAdvanced3Heuristic(false), // 21
+  noStrandedIslandsAdvanced3Heuristic(true), // 22
+  unfillableIslandPigeonholeHeuristic(false), // 23
+  unfillableIslandPigeonholeHeuristic(true), // 24
+  noBlockedBoatsPigeonholeHeuristic(false), // 25
+  noBlockedBoatsPigeonholeHeuristic(true), // 26
+  evenOrOddQuestion, // 27
+  guessAndCheck(false), // 28
+  guessAndCheck(true), // 29
 ];
 
 const getIslandData = (level, island, levelData, recalc) => {

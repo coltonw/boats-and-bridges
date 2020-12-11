@@ -835,6 +835,133 @@ levels:
     boats: []
     pirates: []
     trucks: []
+  - name: Which One, Which One
+    islands:
+      - x: 0
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 0
+        b: 1
+        'n': 0
+      - x: 1
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 1
+        b: 2
+        'n': 0
+      - x: 4
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 4
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 3
+        b: 2
+        'n': 0
+      - x: 4
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 5
+        b: 2
+        'n': 0
+    boats: []
+    bridgesH: []
+    bridgesV: []
+    pirates: []
+    trucks: []
+  - name: The Connection Corner
+    islands:
+      - x: 0
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 5
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 1
+        b: 1
+        'n': 0
+      - x: 0
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 2
+        b: 2
+        'n': 0
+      - x: 4
+        'y': 2
+        b: 2
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 5
+        'y': 4
+        b: 2
+        'n': 0
+    boats: []
+    bridgesH: []
+    bridgesV: []
+    pirates: []
+    trucks: []
+
   - name: Bringing things Together
     islands:
       - x: 0
@@ -1102,69 +1229,83 @@ levels:
         dock:
           x: 0
           'y': 0
-  - name: Erin
+  - name: Is the Ocean Safe?
     islands:
-      - x: 0
-        y: 0
-        b: 3
-        n: 0
       - x: 2
-        y: 0
+        'y': 0
         b: 3
-        n: 0
+        'n': 0
       - x: 3
-        y: 0
-        b: 2
-        n: 0
+        'y': 0
+        b: 3
+        'n': 0
       - x: 0
-        y: 1
-        b: 5
-        n: 0
+        'y': 1
+        b: 3
+        'n': 0
       - x: 1
-        y: 1
-        b: 2
-        n: 0
-      - x: 0
-        y: 2
+        'y': 1
         b: 3
-        n: 0
+        'n': 0
       - x: 3
-        y: 2
-        b: 3
-        n: 0
-      - x: 3
-        y: 3
-        b: 5
-        n: 0
-      - x: 4
-        y: 3
-        b: 2
-        n: 0
-      - x: 3
-        y: 4
+        'y': 1
         b: 4
-        n: 0
+        'n': 0
       - x: 4
-        y: 4
+        'y': 1
         b: 3
-        n: 0
-      - x: 1
-        y: 5
-        b: 1
-        n: 0
-      - x: 4
-        y: 5
+        'n': 0
+      - x: 3
+        'y': 2
         b: 2
-        n: 0
+        'n': 0
+      - x: 0
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 3
+        b: 5
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 4
+        'y': 3
+        b: 4
+        'n': 0
+      - x: 0
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 4
+        'y': 4
+        b: 2
+        'n': 0
+      - x: 0
+        'y': 5
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 5
+        b: 2
+        'n': 0
     boats:
       - boat:
-          x: 3
-          y: 3
-        dock:
           x: 0
-          y: 0
+          'y': 1
+        dock:
+          x: 2
+          'y': 0
     bridgesH: []
     bridgesV: []
+    pirates: []
+    trucks: []
   - name: Lazy River
     islands:
       - x: 0

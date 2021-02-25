@@ -112,7 +112,7 @@ function getEndpoints(x, y, length, angle) {
 // ratios of how important various numbers are to the quality
 const minRatio = 1;
 const avgRatio = 1;
-function lineQuality(line, lines) {
+function lineQuality(line, lines, size) {
   let min = 10000000;
   let sum = 0;
   for (let i = 0; i < lines.length; i++) {
@@ -128,12 +128,121 @@ function lineQuality(line, lines) {
       lines[i].length,
       lines[i].angle
     );
-    const d = segmentDistance(
+
+    // ---
+    // -X-
+    // ---
+    let d = segmentDistance(
       { x: a0x, y: a0y },
       { x: a1x, y: a1y },
       { x: b0x, y: b0y },
       { x: b1x, y: b1y }
     );
+
+    // ---
+    // --X
+    // ---
+    d = Math.min(
+      d,
+      segmentDistance(
+        { x: a0x + size, y: a0y },
+        { x: a1x + size, y: a1y },
+        { x: b0x, y: b0y },
+        { x: b1x, y: b1y }
+      )
+    );
+
+    // ---
+    // ---
+    // --X
+    d = Math.min(
+      d,
+      segmentDistance(
+        { x: a0x + size, y: a0y + size },
+        { x: a1x + size, y: a1y + size },
+        { x: b0x, y: b0y },
+        { x: b1x, y: b1y }
+      )
+    );
+
+    // ---
+    // ---
+    // -X-
+    d = Math.min(
+      d,
+      segmentDistance(
+        { x: a0x, y: a0y + size },
+        { x: a1x, y: a1y + size },
+        { x: b0x, y: b0y },
+        { x: b1x, y: b1y }
+      )
+    );
+
+    // ---
+    // ---
+    // X--
+    d = Math.min(
+      d,
+      segmentDistance(
+        { x: a0x - size, y: a0y + size },
+        { x: a1x - size, y: a1y + size },
+        { x: b0x, y: b0y },
+        { x: b1x, y: b1y }
+      )
+    );
+
+    // ---
+    // X--
+    // ---
+    d = Math.min(
+      d,
+      segmentDistance(
+        { x: a0x - size, y: a0y },
+        { x: a1x - size, y: a1y },
+        { x: b0x, y: b0y },
+        { x: b1x, y: b1y }
+      )
+    );
+
+    // X--
+    // ---
+    // ---
+    d = Math.min(
+      d,
+      segmentDistance(
+        { x: a0x - size, y: a0y - size },
+        { x: a1x - size, y: a1y - size },
+        { x: b0x, y: b0y },
+        { x: b1x, y: b1y }
+      )
+    );
+
+    // -X-
+    // --X
+    // ---
+    d = Math.min(
+      d,
+      segmentDistance(
+        { x: a0x, y: a0y - size },
+        { x: a1x, y: a1y - size },
+        { x: b0x, y: b0y },
+        { x: b1x, y: b1y }
+      )
+    );
+
+    // --X
+    // ---
+    // ---
+    d = Math.min(
+      d,
+      segmentDistance(
+        { x: a0x + size, y: a0y - size },
+        { x: a1x + size, y: a1y - size },
+        { x: b0x, y: b0y },
+        { x: b1x, y: b1y }
+      )
+    );
+
     min = Math.min(min, d);
     sum += d;
   }
@@ -160,7 +269,7 @@ function getLines(size, maxAngle, number) {
     let bestLineQuality = 0;
     for (let j = 0; j < randomAttempts; j++) {
       const testLine = getRandomLine(size, maxAngle);
-      const testQuality = lineQuality(testLine, lines);
+      const testQuality = lineQuality(testLine, lines, size);
       if (testQuality > bestLineQuality || line === null) {
         bestLineQuality = testQuality;
         line = testLine;

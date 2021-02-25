@@ -1,5 +1,4 @@
 const Jimp = require('jimp');
-const math = require('mathjs');
 
 function wrappedBlit(image, stroke, x, y) {
   const iW = image.bitmap.width;

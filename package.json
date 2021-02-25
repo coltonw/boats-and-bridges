@@ -15,7 +15,6 @@
     "jimp": "^0.16.1",
     "js-yaml": "^3.14.0",
     "lodash": "^4.17.20",
-    "mathjs": "^9.2.0",
     "seedrandom": "^3.0.5"
   },
   "devDependencies": {

@@ -22,10 +22,10 @@ function wrappedBlit(image, stroke, x, y) {
 
 function onLine(a0, a1, p) {
   if (
-    p.x <= max(a0.x, a1.x) &&
-    p.x <= min(a0.x, a1.x) &&
-    p.y <= max(a0.y, a1.y) &&
-    p.y <= min(a0.y, a1.y)
+    p.x <= Math.max(a0.x, a1.x) &&
+    p.x <= Math.min(a0.x, a1.x) &&
+    p.y <= Math.max(a0.y, a1.y) &&
+    p.y <= Math.min(a0.y, a1.y)
   )
     return true;
 
@@ -110,7 +110,7 @@ function getEndpoints(x, y, length, angle) {
 }
 
 // ratios of how important various numbers are to the quality
-const minRatio = 1;
+const minRatio = 4;
 const avgRatio = 1;
 function lineQuality(line, lines, size) {
   let min = 10000000;
@@ -247,11 +247,11 @@ function lineQuality(line, lines, size) {
     sum += d;
   }
 
-  return (sum / lines) * avgRatio + min * minRatio;
+  return (sum / lines.length) * avgRatio + min * minRatio;
 }
 
-function getRandomLine(size, maxAngle) {
-  const scale = Math.random() * 0.7 + 0.3;
+function getRandomLine(size, maxAngle, scale) {
+  scale = scale || Math.random() * 0.4 + 0.6;
   return {
     x: getRandomInt(size),
     y: getRandomInt(size),
@@ -261,14 +261,17 @@ function getRandomLine(size, maxAngle) {
   };
 }
 
-const randomAttempts = 50;
+const randomAttempts = 20;
 function getLines(size, maxAngle, number) {
   const lines = [getRandomLine(size, maxAngle)];
   for (let i = 1; i < number; i++) {
     let line = null;
     let bestLineQuality = 0;
+    // scale is picked once per line otherwise the algorithm will
+    // always be biased toward short lines
+    const scale = Math.random() * 0.4 + 0.6;
     for (let j = 0; j < randomAttempts; j++) {
-      const testLine = getRandomLine(size, maxAngle);
+      const testLine = getRandomLine(size, maxAngle, scale);
       const testQuality = lineQuality(testLine, lines, size);
       if (testQuality > bestLineQuality || line === null) {
         bestLineQuality = testQuality;
@@ -292,7 +295,7 @@ new Jimp(size, size, 0xffffffff, (err, image) => {
   // console.log('Darkness before: ', averageDarkness(image));
   Jimp.read('./stroke.png').then((stroke) => {
     stroke = stroke.resize(size, strokeWidth);
-    const lines = getLines(size, maxAngle, 10);
+    const lines = getLines(size, maxAngle, 20);
     for (let i = 0; i < lines.length; i++) {
       let modifiedStroke = stroke.clone().resize(lines[i].length, strokeWidth);
       // rotating is performance heavy so we are currently only doing it for 20 lines

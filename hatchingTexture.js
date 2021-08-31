@@ -260,7 +260,7 @@ function getRandomLine(size, maxAngle, scale) {
   };
 }
 
-const randomAttempts = 20;
+const randomAttempts = 40;
 function getLines(size, maxAngle, number) {
   const lines = [getRandomLine(size, maxAngle)];
   for (let i = 1; i < number; i++) {
@@ -284,7 +284,7 @@ function getLines(size, maxAngle, number) {
 
 let size = 512;
 let strokeWidth = 10;
-const maxAngle = 5;
+const maxAngle = 3;
 
 size = size * 4;
 strokeWidth = strokeWidth * 4;

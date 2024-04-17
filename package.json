@@ -6,7 +6,7 @@
   "scripts": {
     "solve": "node solveAll.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:levelEditor": "webpack"
+    "build:levelEditor": "NODE_OPTIONS=--openssl-legacy-provider webpack"
   },
   "author": "coltonw@gmail.com",
   "license": "ISC",
@@ -24,7 +24,7 @@
     "babel-loader": "^8.1.0",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "css-loader": "^5.0.0",
-    "node-sass": "^4.14.1",
+    "sass": "^1.53.0",
     "sass-loader": "^10.0.3",
     "style-loader": "^2.0.0",
     "terser-webpack-plugin": "^5.0.0",

@@ -892,15 +892,12 @@ const getPossiblyDoubleConnectedIslandsAdvanced = (
   while (traversingStack.length > 0 || traversingSingles.length > 0) {
     if (traversingStack.length > 0) {
       const island = traversingStack.pop();
-      const [
-        passThroughs,
-        singles,
-        deadEnds,
-      ] = possiblyDoubleConnectedAdjacentIslandsAdvanced(
-        level,
-        island,
-        excludeBridges
-      );
+      const [passThroughs, singles, deadEnds] =
+        possiblyDoubleConnectedAdjacentIslandsAdvanced(
+          level,
+          island,
+          excludeBridges
+        );
       passThroughs.forEach((cI) => {
         if (!visited.find((i) => i.x === cI.x && i.y === cI.y)) {
           visited.push(cI);
@@ -920,15 +917,12 @@ const getPossiblyDoubleConnectedIslandsAdvanced = (
       });
     } else {
       const island = traversingSingles.pop();
-      const [
-        passThroughs,
-        singles,
-        deadEnds,
-      ] = possiblyDoubleConnectedAdjacentIslandsAdvanced(
-        level,
-        island,
-        excludeBridges
-      );
+      const [passThroughs, singles, deadEnds] =
+        possiblyDoubleConnectedAdjacentIslandsAdvanced(
+          level,
+          island,
+          excludeBridges
+        );
       passThroughs.forEach((cI) => {
         if (
           !visited.find((i) => i.x === cI.x && i.y === cI.y) &&
@@ -1016,6 +1010,133 @@ const getTotalConnectedBridges = (level, island) => {
   return total;
 };
 
+/**
+ * randomBiased takes a start and end integer and a ratio representing how much more likelie you want the start than the end and
+ * then creates a range of probablilities for those numbers and each number in between such that the likelihood of being picked
+ * drmas at a linear rate from the start to the end
+ */
+const randomBiased = (start, end, ratio = 3) => {
+  // A / C = Ratio
+  // A + B1 + B2 + ... + C = 1
+  // A - B1 = B1 - B2 = B(N-2) - C = Step
+  // NA - STEP*N(N-1)/2 = 1
+  // A = 1/N + STEP*(N-1)/2
+  // A - C = C(R - 1) = Step * (N - 1)
+  // Step = C(R - 1)/(N - 1)
+  // Step = 2(R - 1)/(N * (N - 1) * (R + 1))
+
+  const diff = Math.abs(start - end);
+  if (diff === 0) {
+    return start;
+  }
+  const n = diff + 1;
+
+  const inc = start < end ? 1 : -1;
+  const step = (2 * (ratio - 1)) / (n * (n - 1) * (ratio + 1));
+  const startProb = 1 / n + (step * (n - 1)) / 2;
+  let cur = start;
+  let curProb = startProb;
+  let probCum = curProb;
+  const rnd = Math.random();
+  while (rnd > probCum) {
+    curProb = curProb - step;
+    probCum = probCum + curProb;
+    cur = cur + inc;
+  }
+  return cur;
+};
+
+const compress = (level) => {
+  const xCompress = [];
+  const yCompress = [];
+
+  const [xMaxIsl, yMaxIsl] = level.islands.reduce(
+    ([mx, my], { x, y }) => [Math.max(mx, x), Math.max(my, y)],
+    [0, 0]
+  );
+  const [xMaxB, yMaxB] = (level.boats || []).reduce(
+    ([mx, my], { boat, dock }) => {
+      const xMaxChoices = [mx];
+      const yMaxChoices = [my];
+      if (boat) {
+        xMaxChoices.push(boat.x);
+        yMaxChoices.push(boat.y);
+      }
+      if (dock) {
+        xMaxChoices.push(dock.x);
+        yMaxChoices.push(dock.y);
+      }
+      return [Math.max(...xMaxChoices), Math.max(...yMaxChoices)];
+    },
+    [xMaxIsl, yMaxIsl]
+  );
+  const [xMax, yMax] = (level.pirates || []).reduce(
+    ([mx, my], { x, y }) => [Math.max(mx, x), Math.max(my, y)],
+    [xMaxB, yMaxB]
+  );
+
+  let compress = 0;
+  for (let i = 0; i <= xMax; i++) {
+    const found = level.islands.find(({ x }) => x === i);
+    if (!found) {
+      compress += 1;
+    }
+    xCompress.push(compress);
+  }
+  compress = 0;
+  for (let i = 0; i <= yMax; i++) {
+    const found = level.islands.find(({ y }) => y === i);
+    if (!found) {
+      compress += 1;
+    }
+    yCompress.push(compress);
+  }
+
+  level.islands.forEach((island) => {
+    island.x = island.x - xCompress[island.x];
+    island.y = island.y - yCompress[island.y];
+  });
+
+  (level.trucks || []).forEach(({ truck, garage }) => {
+    if (truck) {
+      truck.x = truck.x - xCompress[truck.x];
+      truck.y = truck.y - yCompress[truck.y];
+    }
+    if (garage) {
+      garage.x = garage.x - xCompress[garage.x];
+      garage.y = garage.y - yCompress[garage.y];
+    }
+  });
+
+  (level.boats || []).forEach(({ boat, dock }) => {
+    if (boat) {
+      boat.x = boat.x - xCompress[boat.x];
+      boat.y = boat.y - yCompress[boat.y];
+    }
+    if (dock) {
+      dock.x = dock.x - xCompress[dock.x];
+      dock.y = dock.y - yCompress[dock.y];
+    }
+  });
+
+  (level.pirates || []).forEach((pirate) => {
+    pirate.x = pirate.x - xCompress[pirate.x];
+    pirate.y = pirate.y - yCompress[pirate.y];
+  });
+
+  (level.bridgesH || []).forEach((bridgeH) => {
+    bridgeH.x0 = bridgeH.x0 - xCompress[bridgeH.x0];
+    bridgeH.x1 = bridgeH.x1 - xCompress[bridgeH.x1];
+    bridgeH.y = bridgeH.y - yCompress[bridgeH.y];
+  });
+
+  (level.bridgesV || []).forEach((bridgeV) => {
+    bridgeV.x = bridgeV.x - xCompress[bridgeV.x];
+    bridgeV.y0 = bridgeV.y0 - yCompress[bridgeV.y0];
+    bridgeV.y1 = bridgeV.y1 - yCompress[bridgeV.y1];
+  });
+};
+
 module.exports = {
   bridgesLeft,
   bridgeBetween,
@@ -1041,4 +1162,6 @@ module.exports = {
   islandTriples,
   getAdjacentIslands,
   getTotalConnectedBridges,
+  randomBiased,
+  compress,
 };

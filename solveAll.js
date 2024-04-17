@@ -25,7 +25,7 @@ levelsToInclude.forEach((level, i) => {
     if (
       args.length > 0 &&
       args.indexOf('' + i) === -1 &&
-      args.indexOf(level.name) === -1
+      args.join(' ') !== level.name
     ) {
       return;
     }

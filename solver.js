@@ -331,16 +331,17 @@ const noStrandedIslandsAdvanced2Heuristic = (level, island, islandData) => {
 
   let found = false;
   adjacentIslands.forEach((adjacentIsland) => {
+    const possible = possibleConnections(level, island, adjacentIsland);
     const maxAmount = bridgeBetween(level, island, adjacentIsland)
       ? 1
-      : possibleConnections(level, island, adjacentIsland) - 1;
-    addBridge(level, island, adjacentIsland);
+      : possible - 1;
+    addBridge(level, island, adjacentIsland, possible);
     const connectedIslands = getPossiblyConnectedIslands(level, island);
     if (connectedIslands.length < level.islands.length) {
       const changed = addMaxBridge(level, island, adjacentIsland, maxAmount);
       found = found || changed;
     }
-    removeBridge(level, island, adjacentIsland);
+    removeBridge(level, island, adjacentIsland, possible);
   });
   return found;
 };
@@ -773,118 +774,116 @@ const noStrandedTrucksMaxBridgeHeuristic = (level, island, islandData) => {
 //    A   X   B
 //
 //        B   Y  Putting remaining bridges at the Bs would cause Y to be unfillable, so you must connect to A
-const unfillableIslandPigeonholeHeuristic = (advanced) => (
-  level,
-  island,
-  islandData,
-  levelData
-) => {
-  if (!level.boats || !island.b) {
-    return false;
-  }
-  const adjacentIslands = islandData.adjacentIslands.filter((aI) => aI.b);
-  let found = false;
-  const pairs = islandPairs(adjacentIslands, true);
-  pairs.forEach(([aI1, aI2]) => {
-    const fIX = aI1.x !== island.x ? aI1.x : aI2.x;
-    const fIY = aI1.y !== island.y ? aI1.y : aI2.y;
-    const farIsland = level.islands.find((fI) => fI.x === fIX && fI.y === fIY);
-    if (
-      farIsland &&
-      farIsland.b &&
-      adjacent(level, aI1, farIsland) &&
-      adjacent(level, aI2, farIsland)
-    ) {
-      const otherIslands = getIslandData(
-        level,
-        farIsland,
-        levelData
-      ).adjacentIslands.filter(
-        (oI) =>
-          !(
-            (oI.x === aI1.x && oI.y === aI1.y) ||
-            (oI.x === aI2.x && oI.y === aI2.y)
-          )
+const unfillableIslandPigeonholeHeuristic =
+  (advanced) => (level, island, islandData, levelData) => {
+    if (!level.boats || !island.b) {
+      return false;
+    }
+    const adjacentIslands = islandData.adjacentIslands.filter((aI) => aI.b);
+    let found = false;
+    const pairs = islandPairs(adjacentIslands, true);
+    pairs.forEach(([aI1, aI2]) => {
+      const fIX = aI1.x !== island.x ? aI1.x : aI2.x;
+      const fIY = aI1.y !== island.y ? aI1.y : aI2.y;
+      const farIsland = level.islands.find(
+        (fI) => fI.x === fIX && fI.y === fIY
       );
-      const otherConnections = otherIslands.reduce(
-        (s, oI) => s + possibleConnections(level, oI, farIsland),
-        0
-      );
-
-      const filledBridgesLeft1 =
-        bridgesLeft(aI1) - possibleConnections(level, island, aI1);
-      const filledBridgesLeft2 =
-        bridgesLeft(aI2) -
-        Math.min(
-          possibleConnections(level, island, aI2),
-          bridgesLeft(island) - possibleConnections(level, island, aI1)
-        );
-
       if (
-        filledBridgesLeft1 + filledBridgesLeft2 >=
-        bridgesLeft(farIsland) - otherConnections
+        farIsland &&
+        farIsland.b &&
+        adjacent(level, aI1, farIsland) &&
+        adjacent(level, aI2, farIsland)
       ) {
-        return;
-      }
-
-      // there are three situations here
-      // 1. bridgesLeft - (max bridges to one blocking island) is equal to all bridges in the non-blocking islands, so we just fill them up
-      // 2. bridgesLeft - (max bridges to one blocking island) is greater than non-blocking islands possible choices (aka 1 for 1 non-blocking island or 3 for 2 non-blocking islands)
-      // 3. ADVANCED ONLY - bridgesLeft - (max bridges to one blocking island) is 2 and there is one non-blocking island with only 1 possible connection, then a bridge is pigeonholed onto the other island
-      //    Separated the advanced one because it is more complicated
-      const nonBlockingIslands = adjacentIslands.filter(
-        (aI) =>
-          !(
-            (aI.x === aI1.x && aI.y === aI1.y) ||
-            (aI.x === aI2.x && aI.y === aI2.y)
-          )
-      );
-      const possibleBridges = nonBlockingIslands.reduce(
-        (s, aI) => s + possibleConnections(level, island, aI),
-        0
-      );
-      const fillElsewhereBridges =
-        bridgesLeft(farIsland) -
-        otherConnections -
-        (filledBridgesLeft1 + filledBridgesLeft2);
-
-      // 1
-      if (fillElsewhereBridges === possibleBridges) {
-        nonBlockingIslands.forEach((nBI) => {
-          addBridge(
-            level,
-            island,
-            nBI,
-            possibleConnections(level, island, nBI)
-          );
-          found = true;
-        });
-      } else if (fillElsewhereBridges > (adjacentIslands.length - 3) * 2) {
-        // 2
-        nonBlockingIslands.forEach((aI) => {
-          addBridge(level, island, aI, 1);
-          found = true;
-        });
-      } else if (
-        advanced &&
-        fillElsewhereBridges === 2 &&
-        nonBlockingIslands.find(
-          (nBI) => possibleConnections(level, island, nBI) === 1
-        )
-      ) {
-        // 3
-        const pigeonholed = nonBlockingIslands.find(
-          (nBI) => possibleConnections(level, island, nBI) === 2
+        const otherIslands = getIslandData(
+          level,
+          farIsland,
+          levelData
+        ).adjacentIslands.filter(
+          (oI) =>
+            !(
+              (oI.x === aI1.x && oI.y === aI1.y) ||
+              (oI.x === aI2.x && oI.y === aI2.y)
+            )
         );
-        if (pigeonholed) {
-          addBridge(level, island, pigeonholed, 1);
-          found = true;
+        const otherConnections = otherIslands.reduce(
+          (s, oI) => s + possibleConnections(level, oI, farIsland),
+          0
+        );
+
+        const filledBridgesLeft1 =
+          bridgesLeft(aI1) - possibleConnections(level, island, aI1);
+        const filledBridgesLeft2 =
+          bridgesLeft(aI2) -
+          Math.min(
+            possibleConnections(level, island, aI2),
+            bridgesLeft(island) - possibleConnections(level, island, aI1)
+          );
+
+        if (
+          filledBridgesLeft1 + filledBridgesLeft2 >=
+          bridgesLeft(farIsland) - otherConnections
+        ) {
+          return;
+        }
+
+        // there are three situations here
+        // 1. bridgesLeft - (max bridges to one blocking island) is equal to all bridges in the non-blocking islands, so we just fill them up
+        // 2. bridgesLeft - (max bridges to one blocking island) is greater than non-blocking islands possible choices (aka 1 for 1 non-blocking island or 3 for 2 non-blocking islands)
+        // 3. ADVANCED ONLY - bridgesLeft - (max bridges to one blocking island) is 2 and there is one non-blocking island with only 1 possible connection, then a bridge is pigeonholed onto the other island
+        //    Separated the advanced one because it is more complicated
+        const nonBlockingIslands = adjacentIslands.filter(
+          (aI) =>
+            !(
+              (aI.x === aI1.x && aI.y === aI1.y) ||
+              (aI.x === aI2.x && aI.y === aI2.y)
+            )
+        );
+        const possibleBridges = nonBlockingIslands.reduce(
+          (s, aI) => s + possibleConnections(level, island, aI),
+          0
+        );
+        const fillElsewhereBridges =
+          bridgesLeft(farIsland) -
+          otherConnections -
+          (filledBridgesLeft1 + filledBridgesLeft2);
+
+        // 1
+        if (fillElsewhereBridges === possibleBridges) {
+          nonBlockingIslands.forEach((nBI) => {
+            addBridge(
+              level,
+              island,
+              nBI,
+              possibleConnections(level, island, nBI)
+            );
+            found = true;
+          });
+        } else if (fillElsewhereBridges > (adjacentIslands.length - 3) * 2) {
+          // 2
+          nonBlockingIslands.forEach((aI) => {
+            addBridge(level, island, aI, 1);
+            found = true;
+          });
+        } else if (
+          advanced &&
+          fillElsewhereBridges === 2 &&
+          nonBlockingIslands.find(
+            (nBI) => possibleConnections(level, island, nBI) === 1
+          )
+        ) {
+          // 3
+          const pigeonholed = nonBlockingIslands.find(
+            (nBI) => possibleConnections(level, island, nBI) === 2
+          );
+          if (pigeonholed) {
+            addBridge(level, island, pigeonholed, 1);
+            found = true;
+          }
         }
       }
-    }
-  });
-  return found;
-};
+    });
+    return found;
+  };
 
 // This is for a situation where multiple bridges together would cause unfillable island so you must pigeonhole to other islands
 //    A ----- A
@@ -892,109 +891,106 @@ const unfillableIslandPigeonholeHeuristic = (advanced) => (
 //    B - X - B  Where the only 2 (or even 3?!) possible links are all adjacent to one island,
 //
 //        Y      Which means that island X is pigeonholed to connect to Y
-const noStrandedIslandsAdvanced3Heuristic = (advanced) => (
-  level,
-  island,
-  islandData
-) => {
-  if (!level.boats || !island.b) {
-    return false;
-  }
-  const { adjacentIslands } = islandData;
-  let found = false;
-  // If an island can take all remaining bridges, then it is not useful for a pair in this heuristic
-  const possibleStranders = adjacentIslands.filter(
-    (aI) => possibleConnections(level, island, aI) < bridgesLeft(island)
-  );
-  // TODO: this with triples?
-  const pairs = islandPairs(possibleStranders);
-  forEach(pairs, ([aI1, aI2]) => {
-    let stranders = false;
-    const aI1N = possibleConnections(level, island, aI1);
-    addBridge(level, island, aI1, aI1N);
-    const aI2N = possibleConnections(level, island, aI2);
-    addBridge(level, island, aI2, aI2N);
-    const connectedIslands = getPossiblyConnectedIslands(level, island);
-    if (connectedIslands.length < level.islands.length) {
-      stranders = aI1N + aI2N;
+const noStrandedIslandsAdvanced3Heuristic =
+  (advanced) => (level, island, islandData) => {
+    if (!level.boats || !island.b) {
+      return false;
     }
-    removeBridge(level, island, aI1, aI1N);
-    removeBridge(level, island, aI2, aI2N);
-
-    const aI2N2 = possibleConnections(level, island, aI2);
-    let aI1N2 = 2;
-    if (!stranders && aI2N2 !== aI2N) {
-      addBridge(level, island, aI2, aI2N2);
-      aI1N2 = possibleConnections(level, island, aI1);
-      addBridge(level, island, aI1, aI1N2);
+    const { adjacentIslands } = islandData;
+    let found = false;
+    // If an island can take all remaining bridges, then it is not useful for a pair in this heuristic
+    const possibleStranders = adjacentIslands.filter(
+      (aI) => possibleConnections(level, island, aI) < bridgesLeft(island)
+    );
+    // TODO: this with triples?
+    const pairs = islandPairs(possibleStranders);
+    forEach(pairs, ([aI1, aI2]) => {
+      let stranders = false;
+      const aI1N = possibleConnections(level, island, aI1);
+      addBridge(level, island, aI1, aI1N);
+      const aI2N = possibleConnections(level, island, aI2);
+      addBridge(level, island, aI2, aI2N);
       const connectedIslands = getPossiblyConnectedIslands(level, island);
       if (connectedIslands.length < level.islands.length) {
-        stranders = aI1N2 + aI2N2;
+        stranders = aI1N + aI2N;
       }
-      removeBridge(level, island, aI1, aI1N2);
-      removeBridge(level, island, aI2, aI2N2);
-    }
-    if (stranders) {
-      // there are three situations here
-      // 1. bridgesLeft - (max bridges to stranding islands) is equal to all bridges in the non-stranding islands, so we just fill them up
-      // 2. bridgesLeft - (max bridges to stranding islands) is greater than non-stranding islands possible choices (aka 1 for 1 non-stranding island or 3 for 2 non-stranding islands)
-      // 3. ADVANCED ONLY - bridgesLeft - (max bridges to stranding islands) is 2 and there is one non-stranding island with only 1 possible connection, then a bridge is pigeonholed onto the other island
-      //    Separated the advanced one because it is more complicated
-      const nonStrandingIslands = adjacentIslands.filter(
-        (aI) =>
-          !(
-            (aI.x === aI1.x && aI.y === aI1.y) ||
-            (aI.x === aI2.x && aI.y === aI2.y)
-          )
-      );
-      const possibleBridges = nonStrandingIslands.reduce(
-        (s, aI) => s + possibleConnections(level, island, aI),
-        0
-      );
-      const maxStrandingBridges = stranders - 1;
-      // 1
-      if (bridgesLeft(island) - maxStrandingBridges === possibleBridges) {
-        nonStrandingIslands.forEach((nBI) => {
-          addBridge(
-            level,
-            island,
-            nBI,
-            possibleConnections(level, island, nBI)
-          );
-          found = true;
-        });
-      } else if (
-        bridgesLeft(island) - maxStrandingBridges >
-        (adjacentIslands.length - 3) * 2
-      ) {
-        // 2
-        nonStrandingIslands.forEach((aI) => {
-          addBridge(level, island, aI, 1);
-          found = true;
-        });
-      } else if (
-        advanced &&
-        bridgesLeft(island) - maxStrandingBridges === 2 &&
-        nonStrandingIslands.find(
-          (nBI) => possibleConnections(level, island, nBI) === 1
-        )
-      ) {
-        // 3
-        const pigeonholed = nonStrandingIslands.find(
-          (nBI) => possibleConnections(level, island, nBI) === 2
+      removeBridge(level, island, aI1, aI1N);
+      removeBridge(level, island, aI2, aI2N);
+
+      const aI2N2 = possibleConnections(level, island, aI2);
+      let aI1N2 = 2;
+      if (!stranders && aI2N2 !== aI2N) {
+        addBridge(level, island, aI2, aI2N2);
+        aI1N2 = possibleConnections(level, island, aI1);
+        addBridge(level, island, aI1, aI1N2);
+        const connectedIslands = getPossiblyConnectedIslands(level, island);
+        if (connectedIslands.length < level.islands.length) {
+          stranders = aI1N2 + aI2N2;
+        }
+        removeBridge(level, island, aI1, aI1N2);
+        removeBridge(level, island, aI2, aI2N2);
+      }
+      if (stranders) {
+        // there are three situations here
+        // 1. bridgesLeft - (max bridges to stranding islands) is equal to all bridges in the non-stranding islands, so we just fill them up
+        // 2. bridgesLeft - (max bridges to stranding islands) is greater than non-stranding islands possible choices (aka 1 for 1 non-stranding island or 3 for 2 non-stranding islands)
+        // 3. ADVANCED ONLY - bridgesLeft - (max bridges to stranding islands) is 2 and there is one non-stranding island with only 1 possible connection, then a bridge is pigeonholed onto the other island
+        //    Separated the advanced one because it is more complicated
+        const nonStrandingIslands = adjacentIslands.filter(
+          (aI) =>
+            !(
+              (aI.x === aI1.x && aI.y === aI1.y) ||
+              (aI.x === aI2.x && aI.y === aI2.y)
+            )
         );
-        if (pigeonholed) {
-          addBridge(level, island, pigeonholed, 1);
-          found = true;
+        const possibleBridges = nonStrandingIslands.reduce(
+          (s, aI) => s + possibleConnections(level, island, aI),
+          0
+        );
+        const maxStrandingBridges = stranders - 1;
+        // 1
+        if (bridgesLeft(island) - maxStrandingBridges === possibleBridges) {
+          nonStrandingIslands.forEach((nBI) => {
+            addBridge(
+              level,
+              island,
+              nBI,
+              possibleConnections(level, island, nBI)
+            );
+            found = true;
+          });
+        } else if (
+          bridgesLeft(island) - maxStrandingBridges >
+          (adjacentIslands.length - 3) * 2
+        ) {
+          // 2
+          nonStrandingIslands.forEach((aI) => {
+            addBridge(level, island, aI, 1);
+            found = true;
+          });
+        } else if (
+          advanced &&
+          bridgesLeft(island) - maxStrandingBridges === 2 &&
+          nonStrandingIslands.find(
+            (nBI) => possibleConnections(level, island, nBI) === 1
+          )
+        ) {
+          // 3
+          const pigeonholed = nonStrandingIslands.find(
+            (nBI) => possibleConnections(level, island, nBI) === 2
+          );
+          if (pigeonholed) {
+            addBridge(level, island, pigeonholed, 1);
+            found = true;
+          }
+        }
+        if (found) {
+          return false;
         }
       }
-      if (found) {
-        return false;
-      }
-    }
-  });
-  return found;
-};
+    });
+    return found;
+  };
 
 const noBlockedPairsHelper = (level, island, disconnectedIslands) => {
   let unblockingPair = null;
@@ -1119,97 +1115,94 @@ const onlyChoicesNoBlockedBoatsHeuristic = (level, island, islandData) => {
 // Z   X   Y  X cannot connect to both Ys because it blocks the boat, so it MUST connect to Z
 //       b |
 //     Y - ?
-const noBlockedBoatsPigeonholeHeuristic = (advanced) => (
-  level,
-  island,
-  islandData
-) => {
-  if (!level.boats || !island.b) {
-    return false;
-  }
-  const { adjacentIslands } = islandData;
-  const disconnectedIslands = adjacentIslands.filter(
-    (aI) => !bridgeBetween(level, island, aI)
-  );
-  let found = false;
-  const pairs = islandPairs(disconnectedIslands);
-  forEach(pairs, ([aI1, aI2]) => {
-    addBridge(level, island, aI1);
-    addBridge(level, island, aI2);
-    let strandedBoat = false;
-    forEach(level.boats, ({ boat, dock }) => {
-      const connected = connectedByWater(level, boat, dock);
-      if (!connected) {
-        strandedBoat = true;
-        return false;
-      }
-    });
-    removeBridge(level, island, aI1);
-    removeBridge(level, island, aI2);
-    if (strandedBoat) {
-      // there are three situations here
-      // 1. bridgesLeft - (max bridges to one blocking island) is equal to all bridges in the non-blocking islands, so we just fill them up
-      // 2. bridgesLeft - (max bridges to one blocking island) is greater than non-blocking islands possible choices (aka 1 for 1 non-blocking island or 3 for 2 non-blocking islands)
-      // 3. ADVANCED ONLY - bridgesLeft - (max bridges to one blocking island) is 2 and there is one non-blocking island with only 1 possible connection, then a bridge is pigeonholed onto the other island
-      //    Separated the advanced one because it is more complicated
-      const nonBlockingIslands = adjacentIslands.filter(
-        (aI) =>
-          !(
-            (aI.x === aI1.x && aI.y === aI1.y) ||
-            (aI.x === aI2.x && aI.y === aI2.y)
-          )
-      );
-      const possibleBridges = nonBlockingIslands.reduce(
-        (s, aI) => s + possibleConnections(level, island, aI),
-        0
-      );
-      const maxBlockingBridges = Math.max(
-        possibleConnections(level, island, aI1),
-        possibleConnections(level, island, aI2)
-      );
-      // 1
-      if (bridgesLeft(island) - maxBlockingBridges === possibleBridges) {
-        nonBlockingIslands.forEach((nBI) => {
-          addBridge(
-            level,
-            island,
-            nBI,
-            possibleConnections(level, island, nBI)
-          );
-          found = true;
-        });
-      } else if (
-        bridgesLeft(island) - maxBlockingBridges >
-        (adjacentIslands.length - 3) * 2
-      ) {
-        // 2
-        nonBlockingIslands.forEach((aI) => {
-          addBridge(level, island, aI, 1);
-          found = true;
-        });
-      } else if (
-        advanced &&
-        bridgesLeft(island) - maxBlockingBridges === 2 &&
-        nonBlockingIslands.find(
-          (nBI) => possibleConnections(level, island, nBI) === 1
-        )
-      ) {
-        // 3
-        const pigeonholed = nonBlockingIslands.find(
-          (nBI) => possibleConnections(level, island, nBI) === 2
+const noBlockedBoatsPigeonholeHeuristic =
+  (advanced) => (level, island, islandData) => {
+    if (!level.boats || !island.b) {
+      return false;
+    }
+    const { adjacentIslands } = islandData;
+    const disconnectedIslands = adjacentIslands.filter(
+      (aI) => !bridgeBetween(level, island, aI)
+    );
+    let found = false;
+    const pairs = islandPairs(disconnectedIslands);
+    forEach(pairs, ([aI1, aI2]) => {
+      addBridge(level, island, aI1);
+      addBridge(level, island, aI2);
+      let strandedBoat = false;
+      forEach(level.boats, ({ boat, dock }) => {
+        const connected = connectedByWater(level, boat, dock);
+        if (!connected) {
+          strandedBoat = true;
+          return false;
+        }
+      });
+      removeBridge(level, island, aI1);
+      removeBridge(level, island, aI2);
+      if (strandedBoat) {
+        // there are three situations here
+        // 1. bridgesLeft - (max bridges to one blocking island) is equal to all bridges in the non-blocking islands, so we just fill them up
+        // 2. bridgesLeft - (max bridges to one blocking island) is greater than non-blocking islands possible choices (aka 1 for 1 non-blocking island or 3 for 2 non-blocking islands)
+        // 3. ADVANCED ONLY - bridgesLeft - (max bridges to one blocking island) is 2 and there is one non-blocking island with only 1 possible connection, then a bridge is pigeonholed onto the other island
+        //    Separated the advanced one because it is more complicated
+        const nonBlockingIslands = adjacentIslands.filter(
+          (aI) =>
+            !(
+              (aI.x === aI1.x && aI.y === aI1.y) ||
+              (aI.x === aI2.x && aI.y === aI2.y)
+            )
         );
-        if (pigeonholed) {
-          addBridge(level, island, pigeonholed, 1);
-          found = true;
+        const possibleBridges = nonBlockingIslands.reduce(
+          (s, aI) => s + possibleConnections(level, island, aI),
+          0
+        );
+        const maxBlockingBridges = Math.max(
+          possibleConnections(level, island, aI1),
+          possibleConnections(level, island, aI2)
+        );
+        // 1
+        if (bridgesLeft(island) - maxBlockingBridges === possibleBridges) {
+          nonBlockingIslands.forEach((nBI) => {
+            addBridge(
+              level,
+              island,
+              nBI,
+              possibleConnections(level, island, nBI)
+            );
+            found = true;
+          });
+        } else if (
+          bridgesLeft(island) - maxBlockingBridges >
+          (adjacentIslands.length - 3) * 2
+        ) {
+          // 2
+          nonBlockingIslands.forEach((aI) => {
+            addBridge(level, island, aI, 1);
+            found = true;
+          });
+        } else if (
+          advanced &&
+          bridgesLeft(island) - maxBlockingBridges === 2 &&
+          nonBlockingIslands.find(
+            (nBI) => possibleConnections(level, island, nBI) === 1
+          )
+        ) {
+          // 3
+          const pigeonholed = nonBlockingIslands.find(
+            (nBI) => possibleConnections(level, island, nBI) === 2
+          );
+          if (pigeonholed) {
+            addBridge(level, island, pigeonholed, 1);
+            found = true;
+          }
+        }
+        if (found) {
+          return false;
         }
       }
-      if (found) {
-        return false;
-      }
-    }
-  });
-  return found;
-};
+    });
+    return found;
+  };
 
 const evenOrOddQuestion = (level, island, islandData) => {
   if (island.b) {

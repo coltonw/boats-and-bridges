@@ -33,6 +33,9 @@ const bridgeBetween = (level, island0, island1) => {
 
 // TODO: use bridgeBetween to simplify this function
 const possibleConnections = (level, island0, island1) => {
+  if (bridgesLeft(island0) === 0 || bridgesLeft(island1) === 0) {
+    return 0;
+  }
   let maxMax = 2;
   if (island0.x === island1.x) {
     let maxBridgeVMax = 2;
@@ -511,13 +514,20 @@ const connectedByWater = (level, boat, dock) => {
 
 // water coordinates are to the bottom right of island coordinates
 // e.g. water 0 0 will be in between island 0 0 and island 1 1
-const mustConnectWater = (level, water, maxX, maxY, bridgesToExclude = []) => {
+const mustConnectWaterHelper = (
+  allPossibleBridgesH,
+  allPossibleBridgesV,
+  water,
+  maxX,
+  maxY,
+  bridgesToExclude = []
+) => {
   const result = [];
   let up = true;
   let down = true;
   let left = true;
   let right = true;
-  const checkBridgeH = (bridgeH) => {
+  allPossibleBridgesH.forEach((bridgeH) => {
     if (
       bridgesToExclude.find(
         (b) =>
@@ -537,9 +547,8 @@ const mustConnectWater = (level, water, maxX, maxY, bridgesToExclude = []) => {
         down = false;
       }
     }
-  };
-  level.bridgesH.forEach(checkBridgeH);
-  const checkBridgeV = (bridgeV) => {
+  });
+  allPossibleBridgesV.forEach((bridgeV) => {
     if (
       bridgesToExclude.find(
         (b) =>
@@ -559,35 +568,7 @@ const mustConnectWater = (level, water, maxX, maxY, bridgesToExclude = []) => {
         right = false;
       }
     }
-  };
-  level.bridgesV.forEach(checkBridgeV);
-  for (let i = 0; i < level.islands.length - 1; i++) {
-    for (let j = i + 1; j < level.islands.length; j++) {
-      if (
-        vertAdjacent(level, level.islands[i], level.islands[j]) &&
-        possibleConnections(level, level.islands[i], level.islands[j]) > 0 &&
-        level.islands[i].b !== 1 &&
-        level.islands[j].b !== 1
-      ) {
-        checkBridgeV({
-          x: level.islands[i].x,
-          y0: Math.min(level.islands[i].y, level.islands[j].y),
-          y1: Math.max(level.islands[i].y, level.islands[j].y),
-        });
-      } else if (
-        horAdjacent(level, level.islands[i], level.islands[j]) &&
-        possibleConnections(level, level.islands[i], level.islands[j]) > 0 &&
-        level.islands[i].b !== 1 &&
-        level.islands[j].b !== 1
-      ) {
-        checkBridgeH({
-          x0: Math.min(level.islands[i].x, level.islands[j].x),
-          x1: Math.max(level.islands[i].x, level.islands[j].x),
-          y: level.islands[i].y,
-        });
-      }
-    }
-  }
+  });
 
   // min x and y is -1 max x and y is max island x and y respectively
   if (water.x <= -1) {
@@ -628,10 +609,41 @@ const getMustConnectWater = (level, pirate, bridgesToExclude) => {
     maxY = Math.max(maxY, island.y);
   });
 
+  let allPossibleBridgesH = [...level.bridgesH];
+  let allPossibleBridgesV = [...level.bridgesV];
+  for (let i = 0; i < level.islands.length - 1; i++) {
+    for (let j = i + 1; j < level.islands.length; j++) {
+      if (
+        level.islands[i].b !== 1 &&
+        level.islands[j].b !== 1 &&
+        horAdjacent(level, level.islands[i], level.islands[j]) &&
+        possibleConnections(level, level.islands[i], level.islands[j]) > 0
+      ) {
+        allPossibleBridgesH.push({
+          x0: Math.min(level.islands[i].x, level.islands[j].x),
+          x1: Math.max(level.islands[i].x, level.islands[j].x),
+          y: level.islands[i].y,
+        });
+      } else if (
+        level.islands[i].b !== 1 &&
+        level.islands[j].b !== 1 &&
+        vertAdjacent(level, level.islands[i], level.islands[j]) &&
+        possibleConnections(level, level.islands[i], level.islands[j]) > 0
+      ) {
+        allPossibleBridgesV.push({
+          x: level.islands[i].x,
+          y0: Math.min(level.islands[i].y, level.islands[j].y),
+          y1: Math.max(level.islands[i].y, level.islands[j].y),
+        });
+      }
+    }
+  }
+
   while (traversingStack.length > 0) {
     const water = traversingStack.pop();
-    const connected = mustConnectWater(
-      level,
+    const connected = mustConnectWaterHelper(
+      allPossibleBridgesH,
+      allPossibleBridgesV,
       water,
       maxX,
       maxY,
@@ -657,11 +669,42 @@ const connectedOutside = (level, startingWater, bridgesToExclude = []) => {
     maxY = Math.max(maxY, island.y);
   });
 
+  let allPossibleBridgesH = [...level.bridgesH];
+  let allPossibleBridgesV = [...level.bridgesV];
+  for (let i = 0; i < level.islands.length - 1; i++) {
+    for (let j = i + 1; j < level.islands.length; j++) {
+      if (
+        level.islands[i].b !== 1 &&
+        level.islands[j].b !== 1 &&
+        horAdjacent(level, level.islands[i], level.islands[j]) &&
+        possibleConnections(level, level.islands[i], level.islands[j]) > 0
+      ) {
+        allPossibleBridgesH.push({
+          x0: Math.min(level.islands[i].x, level.islands[j].x),
+          x1: Math.max(level.islands[i].x, level.islands[j].x),
+          y: level.islands[i].y,
+        });
+      } else if (
+        level.islands[i].b !== 1 &&
+        level.islands[j].b !== 1 &&
+        vertAdjacent(level, level.islands[i], level.islands[j]) &&
+        possibleConnections(level, level.islands[i], level.islands[j]) > 0
+      ) {
+        allPossibleBridgesV.push({
+          x: level.islands[i].x,
+          y0: Math.min(level.islands[i].y, level.islands[j].y),
+          y1: Math.max(level.islands[i].y, level.islands[j].y),
+        });
+      }
+    }
+  }
+
   let outside = false;
-  while (traversingStack.length > 0) {
+  while (traversingStack.length > 0 && !outside) {
     const water = traversingStack.pop();
-    const connected = mustConnectWater(
-      level,
+    const connected = mustConnectWaterHelper(
+      allPossibleBridgesH,
+      allPossibleBridgesV,
       water,
       maxX,
       maxY,

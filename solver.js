@@ -290,28 +290,18 @@ const pigeonholeHeuristic = (level, island, islandData) => {
 // Stranded island heuristic:
 // 1. Must connect or stranded:
 //    A - X   X - B   Where A and B CANNOT connect via any other links
-const noStrandedIslandsAdvanced1Heuristic = (level, island) => {
-  let adjacentIslands = [];
-  for (let i = 0; i < level.islands.length; i++) {
-    if (
-      adjacent(level, island, level.islands[i]) &&
-      possibleConnections(level, island, level.islands[i]) > 0 &&
-      !bridgeBetween(level, island, level.islands[i])
-    ) {
-      adjacentIslands.push(level.islands[i]);
-    }
-  }
+const noStrandedIslandsAdvanced1Heuristic = (level, island, islandData) => {
+  const { adjacentIslands } = islandData;
+  const disconnectedAdjacent = adjacentIslands.filter(
+    (adj) => !bridgeBetween(level, island, adj)
+  );
 
   let found = false;
-  adjacentIslands.forEach((adjacentIsland) => {
-    const myIslands = getPossiblyConnectedIslands(level, island, [
+  disconnectedAdjacent.forEach((adjacentIsland) => {
+    const connectedIslands = getPossiblyConnectedIslands(level, island, [
       adjacentIsland,
     ]);
-    if (
-      !myIslands.find(
-        (mI) => mI.x === adjacentIsland.x && mI.y === adjacentIsland.y
-      )
-    ) {
+    if (connectedIslands.length < level.islands.length) {
       addBridge(level, island, adjacentIsland, 1);
       found = true;
     }
@@ -667,14 +657,15 @@ const noPiratedBoatsOutsidePreventBridgeHeuristic = (
 
 // 1. Must double connect or the truck is stranded:
 //    T = X   X = G   Where T and G CANNOT double connect via any other links
-const noStrandedTrucksHeuristic = (advanced) => (level, island) => {
+const noStrandedTrucksHeuristic = (advanced) => (level, island, islandData) => {
   if (!level.trucks) {
     return false;
   }
+  const { adjacentIslands } = islandData;
   let found = false;
-  for (let i = 0; i < level.islands.length; i++) {
-    const adjacentIsland = level.islands[i];
-    let bridge = bridgeBetween(level, island, level.islands[i]);
+  for (let i = 0; i < adjacentIslands.length; i++) {
+    const adjacentIsland = adjacentIslands[i];
+    let bridge = bridgeBetween(level, island, adjacentIsland);
     if (!bridge) {
       bridge =
         island.x === adjacentIsland.x
@@ -692,7 +683,6 @@ const noStrandedTrucksHeuristic = (advanced) => (level, island) => {
             };
     }
     if (
-      adjacent(level, island, adjacentIsland) &&
       possibleConnections(level, island, adjacentIsland) + bridge.n > 1 &&
       bridge.n < 2
     ) {
@@ -1350,10 +1340,15 @@ const analyzeSolution = (level, solutionData, quiet) => {
       solutionData.heuristicsApplied[i]
     );
   }
-  solutionData.complexity =
+  const numUnique = new Set(solutionData.heuristicsApplied).size;
+  solutionData.complexity = Math.max(
     (complexity / solutionData.heuristicsApplied.length) * 30 +
-    solutionData.maxHeuristic * 2 +
-    level.islands.length / 2;
+      Math.log2(solutionData.maxHeuristic + 2) * 8 +
+      level.islands.length / 2 +
+      numUnique * 6 -
+      45,
+    0
+  );
   quiet ||
     console.log(
       `Solved (${solutionData.loops} loops; heuristics: ${

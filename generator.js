@@ -217,7 +217,7 @@ const generate = (w = 10, h = 10, seed = undefined, quiet = false) => {
     bridgesH: [],
   };
 
-  const numIslands = Math.floor((w * h) / random(4, 8, true));
+  const numIslands = Math.floor((w * h) / random(4, 7, true));
   let loops = 0;
   const simplifyLoops = 3;
   for (let i = 0; i < simplifyLoops; i++) {
@@ -249,7 +249,8 @@ const simplify = (level) => {
           bridgelessLevel,
           bridgelessLevel.islands[i],
           bridgelessLevel.islands[j]
-        )
+        ) &&
+        (bridgelessLevel.islands[i].b > 1 || bridgelessLevel.islands[j].b > 1)
       ) {
         if (adj) {
           // more than one adjacent island, get out of j to go to next i
@@ -394,11 +395,8 @@ const generateInteresting = (w, h, quiet = false) => {
       quiet || console.log('Rejected for no solution.');
       continue;
     }
-    if (
-      solutionData.heuristicsApplied.indexOf(2) === -1 ||
-      solutionData.heuristicsApplied.indexOf(3) === -1 ||
-      solutionData.heuristicsApplied.indexOf(4) === -1
-    ) {
+    const hSet = new Set(solutionData.heuristicsApplied);
+    if (hSet.size < 5) {
       quiet || console.log('Rejected for being boring 1.');
       continue;
     }
@@ -414,12 +412,7 @@ const generateInteresting = (w, h, quiet = false) => {
       quiet || console.log('Rejected for being boring 3.');
       continue;
     }
-    if (
-      solutionData.heuristicsApplied.indexOf(7) === -1 &&
-      solutionData.heuristicsApplied.indexOf(20) === -1 &&
-      solutionData.heuristicsApplied.indexOf(25) === -1 &&
-      solutionData.heuristicsApplied.indexOf(26) === -1
-    ) {
+    if (!hSet.has(7) && !hSet.has(20) && !hSet.has(25) && !hSet.has(26)) {
       // clear boats if they had no affect on the solution
       quiet || console.log('Removing useless boats.');
 
@@ -440,9 +433,9 @@ const generateInteresting = (w, h, quiet = false) => {
 
 const levels = [];
 let totalComplexity = 0;
-const numLevels = 5000;
+const numLevels = 10;
 for (let i = 0; i < numLevels; i++) {
-  const level = generateInteresting(8, 8, true);
+  const level = generateInteresting(9, 9, true);
   if (level) {
     try {
       const { complexity, heuristicsApplied } = solve(level, true, true);
@@ -459,7 +452,7 @@ for (let i = 0; i < numLevels; i++) {
 
 levels
   .sort((a, b) => a[0] - b[0])
-  .slice(-10)
+  // .slice(-5)
   .forEach(([complexity, level]) => {
     solve(level);
     clear(level);

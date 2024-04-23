@@ -19,13 +19,21 @@ if (args.length > 0) {
   levelsToInclude = [...levels, ...generated, ...testLevels];
 }
 
+if (args.join(' ') === 'profile') {
+  levelsToInclude = [];
+  for (let i = 0; i < 10; i++) {
+    levelsToInclude = levelsToInclude.concat(levels);
+  }
+}
+
 const heuristicsUsed = {};
 levelsToInclude.forEach((level, i) => {
   try {
     if (
       args.length > 0 &&
       args.indexOf('' + i) === -1 &&
-      args.join(' ') !== level.name
+      args.join(' ') !== level.name &&
+      args.join(' ') !== 'profile'
     ) {
       return;
     }

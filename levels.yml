@@ -1,6 +1,7 @@
 ---
 levels:
-  - name: How to play
+  - name: How to Play
+    tip: Drag from one island to the other or tap to select each island one at a time
     islands:
       - x: 0
         y: 0
@@ -17,7 +18,8 @@ levels:
     #   y: 0,
     #   n: 1, // n is number of bridges here (must be 1 or 2)
     bridgesV: []
-  - name: How to win
+  - name: How to Win
+    tip: Each bridge must be vertical or horizontal
     islands:
       - x: 0
         y: 0
@@ -34,6 +36,7 @@ levels:
     bridgesH: []
     bridgesV: []
   - name: Double Bridge
+    tip: Adjacent islands can have up to 2 bridges between them
     islands:
       - x: 0
         y: 0
@@ -50,6 +53,7 @@ levels:
     bridgesH: []
     bridgesV: []
   - name: No Triple Bridges
+    tip: Bridges cannot go diagonal
     islands:
       - x: 0
         y: 0
@@ -69,7 +73,8 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - name: No crossing bridges
+  - name: No Crossing Bridges
+    tip: Bridges cannot cross
     islands:
       - x: 0
         y: 0
@@ -97,7 +102,8 @@ levels:
         n: 0
     bridgesH: []
     bridgesV: []
-  - name: Must connect
+  - name: Must Connect
+    tip: All the islands need to be connected in one network
     islands:
       - x: 0
         y: 0
@@ -118,6 +124,7 @@ levels:
     bridgesH: []
     bridgesV: []
   - name: Warming Up
+    tip: The number of bridges will cycle from 2 bridges back to 0 when you try to add third bridge
     islands:
       - x: 0
         'y': 0
@@ -206,6 +213,7 @@ levels:
     pirates: []
     trucks: []
   - name: At Least One Bridge, Maybe Two
+    tip: All levels can be logically deduced with no guessing
     islands:
       - x: 0
         'y': 0
@@ -589,7 +597,7 @@ levels:
         'y': 0
         b: 2
         'n': 0
-      - x: 10
+      - x: 9
         'y': 0
         b: 2
         'n': 0
@@ -621,7 +629,7 @@ levels:
         'y': 2
         b: 2
         'n': 0
-      - x: 11
+      - x: 8
         'y': 2
         b: 1
         'n': 0
@@ -669,11 +677,11 @@ levels:
         'y': 6
         b: 3
         'n': 0
-      - x: 10
+      - x: 8
         'y': 6
         b: 4
         'n': 0
-      - x: 11
+      - x: 9
         'y': 6
         b: 2
         'n': 0
@@ -682,7 +690,7 @@ levels:
     bridgesV: []
     pirates: []
     trucks: []
-  - name: Grappling hooks
+  - name: Grappling Hooks
     islands:
       - x: 0
         y: 0
@@ -735,6 +743,7 @@ levels:
     bridgesH: []
     bridgesV: []
   - name: My Little Pigeonhole
+    tip: A limit to one island, can mean a bridge to the other
     islands:
       - x: 0
         'y': 0
@@ -772,6 +781,7 @@ levels:
     bridgesV: []
     boats: []
   - name: Big Pigeonhole
+    tip: If you get stuck, you can skip a level and come back to it later
     islands:
       - x: 0
         'y': 0
@@ -1168,10 +1178,6 @@ levels:
     trucks: []
   - name: Bringing It All Together
     islands:
-      - x: 0
-        'y': 0
-        b: 2
-        'n': 0
       - x: 2
         'y': 0
         b: 2
@@ -1181,90 +1187,70 @@ levels:
         b: 2
         'n': 0
       - x: 4
-        'y': 0
-        b: 2
-        'n': 0
-      - x: 5
         'y': 0
         b: 2
         'n': 0
       - x: 6
         'y': 0
-        b: 2
+        b: 3
         'n': 0
       - x: 8
         'y': 0
-        b: 3
-        'n': 0
-      - x: 10
-        'y': 0
         b: 1
+        'n': 0
+      - x: 5
+        'y': 1
+        b: 1
+        'n': 0
+      - x: 6
+        'y': 1
+        b: 1
+        'n': 0
+      - x: 8
+        'y': 1
+        b: 1
+        'n': 0
+      - x: 0
+        'y': 2
+        b: 2
         'n': 0
       - x: 1
-        'y': 1
-        b: 2
-        'n': 0
-      - x: 3
-        'y': 1
-        b: 2
-        'n': 0
-      - x: 7
-        'y': 1
-        b: 1
-        'n': 0
-      - x: 8
-        'y': 1
-        b: 1
-        'n': 0
-      - x: 10
-        'y': 1
-        b: 1
-        'n': 0
-      - x: 2
         'y': 2
         b: 2
         'n': 0
-      - x: 4
-        'y': 2
-        b: 2
-        'n': 0
-      - x: 7
+      - x: 5
         'y': 2
         b: 3
         'n': 0
-      - x: 8
+      - x: 6
         'y': 2
         b: 1
+        'n': 0
+      - x: 7
+        'y': 2
+        b: 1
+        'n': 0
+      - x: 8
+        'y': 2
+        b: 4
         'n': 0
       - x: 9
         'y': 2
         b: 1
         'n': 0
-      - x: 10
-        'y': 2
-        b: 4
-        'n': 0
-      - x: 11
-        'y': 2
-        b: 1
-        'n': 0
-      - x: 2
+      - x: 1
         'y': 3
         b: 2
         'n': 0
-      - x: 3
-        'y': 3
-        b: 2
-        'n': 0
-      - x: 6
+      - x: 4
         'y': 3
         b: 3
         'n': 0
-      - x: 7
+      - x: 5
         'y': 3
         b: 2
         'n': 0
-      - x: 10
+      - x: 8
         'y': 3
         b: 3
         'n': 0
@@ -1272,19 +1258,15 @@ levels:
         'y': 4
         b: 2
         'n': 0
+      - x: 2
+        'y': 4
+        b: 2
+        'n': 0
       - x: 3
         'y': 4
         b: 2
         'n': 0
-      - x: 4
-        'y': 4
-        b: 2
-        'n': 0
-      - x: 5
-        'y': 4
-        b: 2
-        'n': 0
-      - x: 8
+      - x: 6
         'y': 4
         b: 1
         'n': 0
@@ -1292,123 +1274,123 @@ levels:
         'y': 5
         b: 3
         'n': 0
-      - x: 4
+      - x: 3
         'y': 5
         b: 6
         'n': 0
-      - x: 6
+      - x: 4
         'y': 5
         b: 7
         'n': 0
-      - x: 8
+      - x: 6
         'y': 5
         b: 5
         'n': 0
-      - x: 10
+      - x: 8
         'y': 5
         b: 6
         'n': 0
-      - x: 11
+      - x: 9
         'y': 5
         b: 3
         'n': 0
-      - x: 1
+      - x: 0
         'y': 6
         b: 2
         'n': 0
-      - x: 2
+      - x: 1
         'y': 6
         b: 3
+        'n': 0
+      - x: 2
+        'y': 6
+        b: 1
         'n': 0
       - x: 3
         'y': 6
         b: 1
         'n': 0
-      - x: 4
-        'y': 6
-        b: 1
-        'n': 0
-      - x: 7
+      - x: 5
         'y': 6
         b: 2
         'n': 0
-      - x: 11
+      - x: 9
         'y': 6
         b: 1
         'n': 0
-      - x: 2
+      - x: 1
         'y': 7
         b: 1
         'n': 0
-      - x: 4
+      - x: 3
         'y': 7
         b: 1
+        'n': 0
+      - x: 6
+        'y': 7
+        b: 2
         'n': 0
       - x: 8
         'y': 7
         b: 2
         'n': 0
-      - x: 10
-        'y': 7
-        b: 2
-        'n': 0
-      - x: 1
+      - x: 0
         'y': 8
         b: 3
         'n': 0
-      - x: 3
+      - x: 2
         'y': 8
         b: 4
         'n': 0
-      - x: 4
+      - x: 3
         'y': 8
         b: 2
         'n': 0
-      - x: 9
+      - x: 7
         'y': 8
         b: 1
+        'n': 0
+      - x: 2
+        'y': 9
+        b: 6
         'n': 0
       - x: 3
         'y': 9
         b: 6
         'n': 0
       - x: 4
-        'y': 9
-        b: 6
-        'n': 0
-      - x: 6
         'y': 9
         b: 5
         'n': 0
+      - x: 6
+        'y': 9
+        b: 3
+        'n': 0
+      - x: 7
+        'y': 9
+        b: 4
+        'n': 0
       - x: 8
         'y': 9
         b: 3
         'n': 0
-      - x: 9
-        'y': 9
-        b: 4
-        'n': 0
-      - x: 10
-        'y': 9
-        b: 3
-        'n': 0
-      - x: 1
+      - x: 0
         'y': 10
         b: 1
         'n': 0
-      - x: 3
+      - x: 2
         'y': 10
         b: 4
         'n': 0
-      - x: 4
+      - x: 3
         'y': 10
         b: 2
         'n': 0
-      - x: 6
+      - x: 4
         'y': 10
         b: 3
         'n': 0
-      - x: 7
+      - x: 5
         'y': 10
         b: 3
         'n': 0
@@ -1418,6 +1400,7 @@ levels:
     pirates: []
     trucks: []
   - name: My First Boat
+    tip: A boat needs a clear path of water to its dock
     islands:
       - x: 0
         'y': 0
@@ -1747,7 +1730,8 @@ levels:
           'y': 5
     pirates: []
     trucks: []
-  - name: Two boats
+  - name: Two Boats
+    tip: Each boat must connect to its own dock
     islands:
       - x: 0
         'y': 0
@@ -1836,7 +1820,7 @@ levels:
         dock:
           x: 0
           'y': 0
-  - name: Simple boat
+  - name: Simple Boat
     islands:
       - x: 0
         y: 0
@@ -1871,7 +1855,7 @@ levels:
           y: 0
     bridgesH: []
     bridgesV: []
-  - name: Around the outside
+  - name: Around the Outside
     islands:
       - x: 0
         'y': 0
@@ -1992,7 +1976,7 @@ levels:
         dock:
           x: 4
           'y': 0
-  - name: Boat pigeonhole
+  - name: Boat Pigeonhole
     islands:
       - x: 0
         'y': 0
@@ -2074,6 +2058,7 @@ levels:
     pirates: []
     trucks: []
   - name: Time for Trucks
+    tip: Trucks must have a series of double bridges to reach their garage
     islands:
       - x: 0
         'y': 0
@@ -3398,7 +3383,7 @@ levels:
         dock:
           x: 1
           'y': 2
-  - name: Dont combine those
+  - name: "Don't Combine Those"
     islands:
       - x: 1
         'y': 0
@@ -3471,7 +3456,7 @@ levels:
     bridgesH: []
     bridgesV: []
     boats: []
-  - name: Square of mystery
+  - name: Square of Mystery
     islands:
       - x: 0
         'y': 0
@@ -3565,6 +3550,7 @@ levels:
     bridgesV: []
     boats: []
   - name: Pirates Ho
+    tip: Pirates must not have a path of water to any boats
     islands:
       - x: 0
         'y': 0
@@ -4730,6 +4716,159 @@ levels:
         garage:
           x: 3
           'y': 2
+  - name: Boats and Bridges, Pirates and Trucks
+    islands:
+      - x: 1
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 0
+        b: 5
+        'n': 0
+      - x: 4
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 5
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 1
+        b: 7
+        'n': 0
+      - x: 5
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 3
+        b: 1
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 5
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 5
+        'y': 6
+        b: null
+        'n': 0
+      - x: 0
+        'y': 7
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 7
+        b: 2
+        'n': 0
+      - x: 2
+        'y': 7
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 7
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 7
+        b: 2
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 0
+          'y': 6
+        dock:
+          x: 1
+          'y': 0
+    pirates:
+      - x: 0
+        'y': 7
+    trucks:
+      - truck:
+          x: 4
+          'y': 7
+        garage:
+          x: 1
+          'y': 0
   - name: Bloomin Questions
     islands:
       - x: 4
@@ -4827,7 +4966,8 @@ levels:
     bridgesH: []
     bridgesV: []
     boats: []
-  - name: How do I even start
+  - name: 'How Do I Even Start?'
+    tip: You can get to a few levels deleted from the game by using the URL
     islands:
       - x: 0
         'y': 0
@@ -6500,6 +6640,159 @@ testLevels:
         dock:
           x: 2
           'y': 1
+  - name: Boats and Bridges, Pirates and Trucks ALT
+    islands:
+      - x: 1
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 0
+        b: 5
+        'n': 0
+      - x: 4
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 6
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 1
+        b: null
+        'n': 0
+      - x: 6
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 3
+        b: 1
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 6
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 6
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 0
+        'y': 7
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 7
+        b: 2
+        'n': 0
+      - x: 2
+        'y': 7
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 7
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 7
+        b: 2
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 0
+          'y': 6
+        dock:
+          x: 1
+          'y': 0
+    pirates:
+      - x: 0
+        'y': 7
+    trucks:
+      - truck:
+          x: 4
+          'y': 7
+        garage:
+          x: 4
+          'y': 4
 
 debugLevels:
   - name: crash
@@ -6566,3 +6859,156 @@ debugLevels:
         n: 0
     bridgesH: []
     bridgesV: []
+  - name: Unsolveable solveable
+    islands:
+      - x: 1
+        'y': 0
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 0
+        b: 5
+        'n': 0
+      - x: 4
+        'y': 0
+        b: 4
+        'n': 0
+      - x: 6
+        'y': 0
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 1
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 1
+        b: 7
+        'n': 0
+      - x: 6
+        'y': 1
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 2
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 2
+        b: 4
+        'n': 0
+      - x: 1
+        'y': 3
+        b: 1
+        'n': 0
+      - x: 2
+        'y': 3
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 3
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 4
+        b: 3
+        'n': 0
+      - x: 6
+        'y': 4
+        b: 4
+        'n': 0
+      - x: 2
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 5
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 5
+        b: 3
+        'n': 0
+      - x: 0
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 1
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 2
+        'y': 6
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 6
+        'y': 6
+        b: 4
+        'n': 0
+      - x: 0
+        'y': 7
+        b: 2
+        'n': 0
+      - x: 1
+        'y': 7
+        b: 2
+        'n': 0
+      - x: 2
+        'y': 7
+        b: 3
+        'n': 0
+      - x: 3
+        'y': 7
+        b: 4
+        'n': 0
+      - x: 4
+        'y': 7
+        b: 2
+        'n': 0
+    bridgesH: []
+    bridgesV: []
+    boats:
+      - boat:
+          x: 0
+          'y': 6
+        dock:
+          x: 1
+          'y': 0
+    pirates:
+      - x: 0
+        'y': 7
+    trucks:
+      - truck:
+          x: 4
+          'y': 7
+        garage:
+          x: 4
+          'y': 4

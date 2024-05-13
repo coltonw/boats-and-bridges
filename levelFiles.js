@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const { cloneDeep } = require('lodash');
+const { camelCase, cloneDeep } = require('lodash');
 const solve = require('./solver');
 
 const { levels } = yaml.safeLoad(
@@ -17,7 +17,7 @@ levels.forEach((level, i) => {
 
     solve(level, false, true);
 
-    const output = {
+    let output = {
       name: baseLevel.name,
       islands: baseLevel.islands,
       boats: baseLevel.boats || [],
@@ -30,11 +30,24 @@ levels.forEach((level, i) => {
         bridgesV: level.bridgesV,
       },
     };
+    if (baseLevel.tip) {
+      output = {
+        name: baseLevel.name,
+        tip: baseLevel.tip,
+        islands: baseLevel.islands,
+        boats: baseLevel.boats || [],
+        pirates: baseLevel.pirates || [],
+        trucks: baseLevel.trucks || [],
+        bridgesH: baseLevel.bridgesH || [],
+        bridgesV: baseLevel.bridgesV || [],
+        solution: {
+          bridgesH: level.bridgesH,
+          bridgesV: level.bridgesV,
+        },
+      };
+    }
     fs.writeFileSync(
-      path.join(
-        __dirname,
-        `levels/level${('' + (i + 1)).padStart(3, '0')}.yml`
-      ),
+      path.join(__dirname, `levels/${camelCase(baseLevel.name)}.yml`),
       yaml.safeDump(output)
     );
   } catch (e) {

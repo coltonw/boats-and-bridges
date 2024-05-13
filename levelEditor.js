@@ -64,7 +64,7 @@ const solveAndRender = (quiet = false) => {
   let solution = null;
   try {
     // No nested guessing because it takes too long and crashes the browser
-    solution = solver(level, quiet, false, true);
+    solution = solver(level, quiet, false, true, true);
   } catch (e) {
     console.log(e);
   }

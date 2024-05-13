@@ -1349,11 +1349,22 @@ const analyzeSolution = (level, solutionData, quiet) => {
       45,
     0
   );
+  const heuristicCounts = [];
+  for (let i = 0; i < solutionData.maxHeuristic + 1; i++) {
+    heuristicCounts.push(
+      solutionData.heuristicsApplied.reduce(
+        (acc, cur) => (cur === i ? acc + 1 : acc),
+        0
+      )
+    );
+  }
   quiet ||
     console.log(
       `Solved (${solutionData.loops} loops; heuristics: ${
         solutionData.heuristicsApplied
-      }, complexity: ${solutionData.complexity.toFixed(0)}):`
+      }, [${heuristicCounts}], complexity: ${solutionData.complexity.toFixed(
+        0
+      )}):`
     );
 };
 
@@ -1361,7 +1372,8 @@ const solve = (
   level,
   quiet = false,
   noGuessing = false,
-  noNestedGuessing = false
+  noNestedGuessing = false,
+  noPrint = false
 ) => {
   // quiet || console.log('Unsolved:');
   // quiet || print(level);
@@ -1425,7 +1437,7 @@ const solve = (
     }
   }
   analyzeSolution(level, solutionData, quiet);
-  quiet || print(level);
+  quiet || noPrint || print(level);
   if (!validated(level)) {
     quiet || console.log('Solution is invalid!!!');
     throw new Error('Invalid final solution');

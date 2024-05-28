@@ -311,6 +311,61 @@ const onlyChoicesGrouped = (level, levelData) => {
   return changed;
 };
 
+// if there are so many bridges required that you MUST have 1 point to each adjacent island
+const moreBridgesThanChoicesHeuristic = (level, island, islandData) => {
+  if (!island.b) {
+    return false;
+  }
+  const { adjacentIslands } = islandData;
+
+  const notConnected = adjacentIslands.filter(
+    (aI) => !bridgeBetween(level, island, aI)
+  );
+
+  if (
+    notConnected.length > 0 &&
+    adjacentIslands.length * 2 - 1 <=
+      bridgesLeft(island) + adjacentIslands.length - notConnected.length
+  ) {
+    notConnected.forEach((adjacentIsland) => {
+      addBridge(level, island, adjacentIsland, 1);
+    });
+    return true;
+  }
+  return false;
+};
+
+const moreBridgesThanChoicesGrouped = (level, levelData) => {
+  let changed = false;
+  for (let i = 0; i < level.islands.length; i++) {
+    if (!level.islands[i].b || full(level.islands[i])) {
+      continue;
+    }
+    // for grouped, we assume there is levelData
+    const { adjacentIslands } =
+      levelData[`${level.islands[i].x}_${level.islands[i].y}`];
+
+    const notConnected = adjacentIslands.filter(
+      (aI) => !bridgeBetween(level, level.islands[i], aI)
+    );
+
+    if (
+      notConnected.length > 0 &&
+      adjacentIslands.length * 2 - 1 <=
+        bridgesLeft(level.islands[i]) +
+          adjacentIslands.length -
+          notConnected.length
+    ) {
+      notConnected.forEach((adjacentIsland) => {
+        addBridge(level, level.islands[i], adjacentIsland, 1);
+        fixLevelData(level, levelData, level.islands[i], adjacentIsland);
+      });
+      changed = true;
+    }
+  }
+  return changed;
+};
+
 // If a one only has a single non-one next to it, it must connect to that
 const onesImmediateHeuristic = (level, island, islandData) => {
   if (island.b !== 1) {
@@ -335,6 +390,35 @@ const onesImmediateHeuristic = (level, island, islandData) => {
   return false;
 };
 
+const onesImmediateGrouped = (level, levelData) => {
+  let changed = false;
+  for (let i = 0; i < level.islands.length; i++) {
+    if (level.islands[i].b !== 1 || full(level.islands[i])) {
+      continue;
+    }
+    // for grouped, we assume there is levelData
+    const { adjacentIslands } =
+      levelData[`${level.islands[i].x}_${level.islands[i].y}`];
+
+    let onlyBig = null;
+    let multipleBig = false;
+    adjacentIslands.forEach((adjacentIsland) => {
+      if (adjacentIsland.b !== 1) {
+        if (onlyBig) {
+          multipleBig = true;
+        }
+        onlyBig = adjacentIsland;
+      }
+    });
+    if (onlyBig && !multipleBig) {
+      addBridge(level, level.islands[i], onlyBig, 1);
+      fixLevelData(level, levelData, level.islands[i], onlyBig);
+      changed = true;
+    }
+  }
+  return changed;
+};
+
 // If 2s connect to 2 islands and one of them is a 2, they must connect to the other one.
 const twosImmediateHeuristic = (level, island, islandData) => {
   if (island.b !== 2 || island.n > 0) {
@@ -357,6 +441,37 @@ const twosImmediateHeuristic = (level, island, islandData) => {
   return found;
 };
 
+const twosImmediateGrouped = (level, levelData) => {
+  let changed = false;
+  for (let i = 0; i < level.islands.length; i++) {
+    if (
+      level.islands[i].b !== 2 ||
+      level.islands[i].n > 0 ||
+      full(level.islands[i])
+    ) {
+      continue;
+    }
+    // for grouped, we assume there is levelData
+    const { adjacentIslands } =
+      levelData[`${level.islands[i].x}_${level.islands[i].y}`];
+
+    if (adjacentIslands.length === 2) {
+      // if one island is 2, add a bridge to the other island
+      if (adjacentIslands[0].b === 2) {
+        addBridge(level, level.islands[i], adjacentIslands[1], 1);
+        fixLevelData(level, levelData, level.islands[i], adjacentIslands[1]);
+        changed = true;
+      }
+      if (adjacentIslands[1].b === 2) {
+        addBridge(level, level.islands[i], adjacentIslands[0], 1);
+        fixLevelData(level, levelData, level.islands[i], adjacentIslands[0]);
+        changed = true;
+      }
+    }
+  }
+  return changed;
+};
+
 // Right now this is simple.  It just adds max bridges.
 // it may be possible to generalize this but for now this just works for 2s next to each other and 1s next to each other
 const noStrandedIslandsSimpleHeuristic = (level, island, islandData) => {
@@ -375,28 +490,29 @@ const noStrandedIslandsSimpleHeuristic = (level, island, islandData) => {
   return found;
 };
 
-// if there are so many bridges required that you MUST have 1 point to each adjacent island
-const moreBridgesThanChoicesHeuristic = (level, island, islandData) => {
-  if (!island.b) {
-    return false;
-  }
-  const { adjacentIslands } = islandData;
+const noStrandedIslandsSimpleGrouped = (level, levelData) => {
+  let changed = false;
+  for (let i = 0; i < level.islands.length; i++) {
+    if (!level.islands.b || level.islands[i].b > 2 || full(level.islands[i])) {
+      continue;
+    }
+    // for grouped, we assume there is levelData
+    const { adjacentIslands } =
+      levelData[`${level.islands[i].x}_${level.islands[i].y}`];
 
-  const notConnected = adjacentIslands.filter(
-    (aI) => !bridgeBetween(level, island, aI)
-  );
-
-  if (
-    notConnected.length > 0 &&
-    adjacentIslands.length * 2 - 1 <=
-      bridgesLeft(island) + adjacentIslands.length - notConnected.length
-  ) {
-    notConnected.forEach((adjacentIsland) => {
-      addBridge(level, island, adjacentIsland, 1);
-    });
-    return true;
+    for (let j = 0; j < adjacentIslands.length; j++) {
+      if (level.islands[i].b === adjacentIslands[j].b) {
+        const c = addMaxBridge(
+          level,
+          level.islands[i],
+          adjacentIslands[j],
+          level.islands[i].b - 1
+        );
+        changed = changed || c;
+      }
+    }
   }
-  return false;
+  return changed;
 };
 
 const noBlockedBoatsHeuristic = (level, island, islandData) => {
@@ -1614,13 +1730,13 @@ module.exports = solve;
 const groupedHeuristics = [
   onlyChoiceGrouped, // 0 and 1
   onlyChoicesGrouped, // 2
+  moreBridgesThanChoicesGrouped, // 3
+  onesImmediateGrouped, // 4
+  twosImmediateGrouped, // 5
+  noStrandedIslandsSimpleGrouped, // 6
 ];
 
 const ungroupedHeuristics = [
-  moreBridgesThanChoicesHeuristic, // 3
-  onesImmediateHeuristic, // 4
-  twosImmediateHeuristic, // 5
-  noStrandedIslandsSimpleHeuristic, // 6
   noBlockedBoatsHeuristic, // 7
   pigeonholeHeuristic, // 8
   noPiratedBoatsHeuristic, // 9

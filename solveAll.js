@@ -6,7 +6,7 @@ const solve = require('./solver');
 
 const hasMultipleSolutions = solve.hasMultipleSolutions;
 const fastSolve = solve.fastSolve;
-const quiet = true;
+const quiet = false;
 
 const { levels, generated, testLevels } = yaml.safeLoad(
   fs.readFileSync(path.join(__dirname, 'levels.yml'))

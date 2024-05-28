@@ -162,6 +162,7 @@ const adjacent = (level, island0, island1) => {
 
 const full = (island) => bridgesLeft(island) <= 0;
 
+// returns true for new bridge or false for just updating an existing bridge
 const addBridge = (level, island0, island1, n = 1) => {
   if (island0.x === island1.x) {
     const bridge = {

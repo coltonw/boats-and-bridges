@@ -76,6 +76,109 @@ const addMaxBridge = (level, island0, island1, max = 1) => {
   }
 };
 
+const fixLevelDataVertBridge = (level, levelData, x, y0, y1) => {
+  for (let i = 0; i < level.islands.length; i++) {
+    const key = `${level.islands[i].x}_${level.islands[i].y}`;
+    if (levelData[key]) {
+      levelData[key].adjacentIslands = levelData[key].adjacentIslands.filter(
+        (adjacentIsland) => {
+          if (
+            ((x <= level.islands[i].x && x >= adjacentIsland.x) ||
+              (x >= level.islands[i].x && x <= adjacentIsland.x)) &&
+            y0 < level.islands[i].y &&
+            y1 > level.islands[i].y
+          ) {
+            return false;
+          }
+          return true;
+        }
+      );
+    }
+  }
+};
+
+const fixLevelDataHorBridge = (level, levelData, x0, x1, y) => {
+  for (let i = 0; i < level.islands.length; i++) {
+    const key = `${level.islands[i].x}_${level.islands[i].y}`;
+    if (levelData[key]) {
+      levelData[key].adjacentIslands = levelData[key].adjacentIslands.filter(
+        (adjacentIsland) => {
+          if (
+            ((y <= level.islands[i].y && y >= adjacentIsland.y) ||
+              (y >= level.islands[i].y && y <= adjacentIsland.y)) &&
+            x0 < level.islands[i].x &&
+            x1 > level.islands[i].x
+          ) {
+            return false;
+          }
+          return true;
+        }
+      );
+    }
+  }
+};
+
+const fixLevelDataFullBridge = (level, levelData, island0, island1) => {
+  for (let i = 0; i < level.islands.length; i++) {
+    if (island0.x === level.islands[i].x && island0.y === level.islands[i].y) {
+      const key = `${level.islands[i].x}_${level.islands[i].y}`;
+      if (levelData[key]) {
+        levelData[key].adjacentIslands = levelData[key].adjacentIslands.filter(
+          (aI) => aI.x !== island1.x || aI.y !== island1.y
+        );
+      }
+    }
+    if (island1.x === level.islands[i].x && island1.y === level.islands[i].y) {
+      const key = `${level.islands[i].x}_${level.islands[i].y}`;
+      if (levelData[key]) {
+        levelData[key].adjacentIslands = levelData[key].adjacentIslands.filter(
+          (aI) => aI.x !== island0.x || aI.y !== island0.y
+        );
+      }
+    }
+  }
+};
+
+const fixLevelDataFullIsland = (level, levelData, island) => {
+  for (let i = 0; i < level.islands.length; i++) {
+    const key = `${level.islands[i].x}_${level.islands[i].y}`;
+    if (levelData[key]) {
+      levelData[key].adjacentIslands = levelData[key].adjacentIslands.filter(
+        (aI) => aI.x !== island.x || aI.y !== island.y
+      );
+    }
+  }
+};
+
+const fixLevelData = (level, levelData, island0, island1) => {
+  if (island0.x === island1.x) {
+    fixLevelDataVertBridge(
+      level,
+      levelData,
+      island0.x,
+      Math.min(island0.y, island1.y),
+      Math.max(island0.y, island1.y)
+    );
+  } else {
+    fixLevelDataHorBridge(
+      level,
+      levelData,
+      Math.min(island0.x, island1.x),
+      Math.max(island0.x, island1.x),
+      island0.y
+    );
+  }
+  if (possibleConnections(level, island0, island1) === 0) {
+    fixLevelDataFullBridge(level, levelData, island0, island1);
+  }
+  if (island0.b && island0.b <= island0.n) {
+    fixLevelDataFullIsland(level, levelData, island0);
+  }
+  if (island1.b && island1.b <= island1.n) {
+    fixLevelDataFullIsland(level, levelData, island1);
+  }
+};
+
 const onlyChoiceSimpleHeuristic = (level, island) => {
   let adjacentIsland = null;
   for (let i = 0; i < level.islands.length; i++) {
@@ -123,6 +226,34 @@ const onlyChoiceHeuristic = (level, island, islandData) => {
   return false;
 };
 
+const onlyChoiceGrouped = (level, levelData) => {
+  let changed = false;
+  for (let i = 0; i < level.islands.length; i++) {
+    const islandData = getIslandData(level, level.islands[i], levelData, true);
+    levelData[`${level.islands[i].x}_${level.islands[i].y}`] = islandData;
+    if (
+      islandData.adjacentIslands.length === 1 &&
+      level.islands[i].b &&
+      !full(level.islands[i])
+    ) {
+      const n = Math.min(
+        bridgesLeft(level.islands[i]),
+        bridgesLeft(islandData.adjacentIslands[0]),
+        2
+      );
+      addBridge(level, level.islands[i], islandData.adjacentIslands[0], n);
+      fixLevelData(
+        level,
+        levelData,
+        level.islands[i],
+        islandData.adjacentIslands[0]
+      );
+      changed = true;
+    }
+  }
+  return changed;
+};
+
 // the adjacent possible bridges fill all remaining bridges needed
 const onlyChoicesHeuristic = (level, island, islandData) => {
   if (!island.b) {
@@ -145,6 +276,39 @@ const onlyChoicesHeuristic = (level, island, islandData) => {
     return true;
   }
   return false;
+};
+
+const onlyChoicesGrouped = (level, levelData) => {
+  let changed = false;
+  for (let i = 0; i < level.islands.length; i++) {
+    if (!level.islands[i].b || full(level.islands[i])) {
+      continue;
+    }
+    // for grouped, we assume there is levelData
+    const { adjacentIslands } =
+      levelData[`${level.islands[i].x}_${level.islands[i].y}`];
+    const bridgeOptionsSum = adjacentIslands.reduce(
+      (sum, aI) => sum + possibleConnections(level, level.islands[i], aI),
+      0
+    );
+    if (bridgeOptionsSum <= bridgesLeft(level.islands[i])) {
+      if (adjacentIslands.length === 0) {
+        print(level);
+        throw new Error();
+      }
+      for (let j = 0; j < adjacentIslands.length; j++) {
+        const n = possibleConnections(
+          level,
+          level.islands[i],
+          adjacentIslands[j]
+        );
+        addBridge(level, level.islands[i], adjacentIslands[j], n);
+        fixLevelData(level, levelData, level.islands[i], adjacentIslands[j]);
+      }
+      changed = true;
+    }
+  }
+  return changed;
 };
 
 // If a one only has a single non-one next to it, it must connect to that
@@ -1446,6 +1610,126 @@ const solve = (
 };
 
 module.exports = solve;
+
+const groupedHeuristics = [
+  onlyChoiceGrouped, // 0 and 1
+  onlyChoicesGrouped, // 2
+];
+
+const ungroupedHeuristics = [
+  moreBridgesThanChoicesHeuristic, // 3
+  onesImmediateHeuristic, // 4
+  twosImmediateHeuristic, // 5
+  noStrandedIslandsSimpleHeuristic, // 6
+  noBlockedBoatsHeuristic, // 7
+  pigeonholeHeuristic, // 8
+  noPiratedBoatsHeuristic, // 9
+  noPiratedBoatsPreventBridgeHeuristic, // 10
+  noStrandedTrucksHeuristic(false), // 11
+  noStrandedTrucksHeuristic(true), // 12
+  noStrandedTrucksMaxBridgeHeuristic, // 13
+  boatsConnectedOutside, // 14
+  boatMustConnectOutside, // 15
+  noPiratedBoatsOutsideHeuristic, // 16
+  noPiratedBoatsOutsidePreventBridgeHeuristic, // 17
+  noStrandedIslandsAdvanced1Heuristic, // 18
+  noStrandedIslandsAdvanced2Heuristic, // 19
+  onlyChoicesNoBlockedBoatsHeuristic, // 20
+  noStrandedIslandsAdvanced3Heuristic(false), // 21
+  noStrandedIslandsAdvanced3Heuristic(true), // 22
+  unfillableIslandPigeonholeHeuristic(false), // 23
+  unfillableIslandPigeonholeHeuristic(true), // 24
+  noBlockedBoatsPigeonholeHeuristic(false), // 25
+  noBlockedBoatsPigeonholeHeuristic(true), // 26
+  evenOrOddQuestion, // 27
+  guessAndCheck(false), // 28
+  guessAndCheck(true), // 29
+];
+
+solve.grouped = (
+  level,
+  quiet = false,
+  noGuessing = false,
+  noNestedGuessing = false,
+  noPrint = false
+) => {
+  let solutionData = {
+    loops: 0,
+    heuristicsApplied: [],
+  };
+  const levelData = {};
+  while (!solved(level)) {
+    solutionData.loops++;
+    let somethingChanged = false;
+    for (let h = 0; h < groupedHeuristics.length; h++) {
+      const heuristicWorked = groupedHeuristics[h](level, levelData);
+      if (heuristicWorked) {
+        solutionData.heuristicsApplied.push(h + 1);
+        somethingChanged = true;
+        break;
+      }
+    }
+    if (somethingChanged) {
+      continue;
+    }
+    const heurLen =
+      ungroupedHeuristics.length - (noGuessing ? 2 : noNestedGuessing ? 1 : 0);
+    for (let h = 0; h < heurLen; h++) {
+      let clonedLevel = level;
+      if (h >= ungroupedHeuristics.length - 2) {
+        clonedLevel = cloneDeep(level);
+      }
+      let first = true;
+      forEach(level.islands, (island) => {
+        let islandData = getIslandData(level, island, levelData, h === 0);
+        levelData[`${island.x}_${island.y}`] = islandData;
+        if (!full(island)) {
+          const heuristicWorked = ungroupedHeuristics[h](
+            level,
+            island,
+            { ...islandData, first },
+            levelData
+          );
+          first = false;
+          if (heuristicWorked) {
+            if (!quiet && h >= ungroupedHeuristics.length - 2) {
+              console.log('Before guess:');
+              print(clonedLevel);
+            }
+            solutionData.heuristicsApplied.push(
+              h + groupedHeuristics.length + 1
+            );
+            somethingChanged = true;
+            return false;
+          }
+        }
+      });
+      // We want to keep repeating with the easiest heuristics until there is "no choice" but to use the more complex ones
+      if (somethingChanged) break;
+    }
+    if (!somethingChanged) {
+      quiet ||
+        console.log(
+          `Level thus far (${solutionData.loops} loops; heuristics: ${solutionData.heuristicsApplied}):`
+        );
+      quiet || print(level);
+      throw new Error('Level unsolvable with current set of heuristics');
+    }
+    if (solutionData.loops > 200) {
+      console.log(
+        `Broken heuristic: ${solutionData.heuristicsApplied.slice(-10)}`
+      );
+      throw new Error('Suspected infinite loop');
+    }
+  }
+  analyzeSolution(level, solutionData, quiet);
+  quiet || noPrint || print(level);
+  if (!validated(level)) {
+    quiet || console.log('Solution is invalid!!!');
+    throw new Error('Invalid final solution');
+  }
+  return solutionData;
+};
 
 solve.heuristics = heuristics;
 

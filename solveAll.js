@@ -6,6 +6,7 @@ const solve = require('./solver');
 
 const hasMultipleSolutions = solve.hasMultipleSolutions;
 const fastSolve = solve.fastSolve;
+const quiet = true;
 
 const { levels, generated, testLevels } = yaml.safeLoad(
   fs.readFileSync(path.join(__dirname, 'levels.yml'))
@@ -37,14 +38,15 @@ levelsToInclude.forEach((level, i) => {
     ) {
       return;
     }
-    console.log('');
+    quiet || console.log('');
     if (level.name) {
-      console.log((args.length === 0 ? `Level ${i + 1}: ` : '') + level.name);
+      quiet ||
+        console.log((args.length === 0 ? `Level ${i + 1}: ` : '') + level.name);
     }
 
-    const { heuristicsApplied } = solve(
+    const { heuristicsApplied } = solve.grouped(
       cloneDeep(level),
-      false,
+      quiet,
       args.length === 0
     );
     if (args.length === 0) {
@@ -57,7 +59,7 @@ levelsToInclude.forEach((level, i) => {
           heuristicsUsed[h] = heuristicsUsed[h] + 1;
         } else {
           heuristicsUsed[h] = 1;
-          console.log(`First use of "${h}"`);
+          quiet || console.log(`First use of "${h}"`);
         }
         hAlready[h] = true;
       });
@@ -68,7 +70,7 @@ levelsToInclude.forEach((level, i) => {
   }
 });
 
-if (Object.keys(heuristicsUsed).length > 0) {
+if (!quiet && Object.keys(heuristicsUsed).length > 0) {
   let s = '';
   Object.entries(heuristicsUsed).forEach(([h, numUses]) => {
     s += `${h}: ${numUses}, `;
